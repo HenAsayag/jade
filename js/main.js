@@ -104,7 +104,7 @@ function newGame(level = 0, daily = false) {
   combo = 0;
   lastMatch = 0;
   keyboardIndex = -1;
-  renderer.setBoard(game.tiles);
+  renderer.setBoard(game.tiles, { transition: "deal" });
   update();
   message("Match two free tiles. Make a little space.");
   persist();
@@ -254,7 +254,7 @@ function shuffle() {
   game.history = [];
   selected = null;
   combo = 0;
-  renderer.setBoard(game.tiles);
+  renderer.setBoard(game.tiles, { transition: "shuffle" });
   update();
   audio.unlock();
   audio.play("shuffle");

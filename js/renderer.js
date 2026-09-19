@@ -8,6 +8,7 @@ import {
   Text,
 } from "../vendor/pixi.mjs";
 import { SYMBOLS, isFree } from "./board.js";
+import { matchPose, entrancePose, MATCH_DURATION } from "./motion.js";
 export class BoardRenderer {
   constructor(host, settings, onSelect, onQuality) {
     this.host = host;
@@ -73,6 +74,8 @@ export class BoardRenderer {
       });
     });
     this.board = new Container();
+    this.board.sortableChildren = true;
+    this.clock = 0;
     this.fx = new Container();
     this.app.stage.addChild(this.board, this.fx);
     const dot = new Graphics().circle(4, 4, 4).fill(0xffffff);
@@ -121,7 +124,7 @@ export class BoardRenderer {
     this.resize();
     progress(100);
   }
-  setBoard(tiles) {
+  setBoard(tiles, { transition = "none" } = {}) {
     this.comboLife = 0;
     this.comboLabel.visible = this.comboGlow.visible = false;
     for (const p of this.particles) {
@@ -145,7 +148,11 @@ export class BoardRenderer {
           .roundRect(1, 0, 95, 134, 12)
           .stroke({ color: 0xffe0a0, width: 3 }),
         sprite = new Sprite(this.textures[tile.symbol]);
-      container.addChild(shadow, glow, sprite);
+      const sheen = new Graphics().roundRect(5, 4, 87, 119, 10).fill(0xfff4cd);
+      sheen.alpha = 0;
+      sheen.eventMode = "none";
+      container.addChild(shadow, glow, sprite, sheen);
+      container.zIndex = tile.z * 100 + tile.y * 7 + tile.x;
       container.eventMode = "static";
       container.cursor = "pointer";
       container.hitArea = new Rectangle(0, 0, 98, 132);
@@ -162,6 +169,16 @@ export class BoardRenderer {
         baseY: 0,
         dy: 0,
         targetY: 0,
+        sheen,
+        size: 1,
+        entered: transition === "none",
+        entry: 0,
+        transition,
+        delay: tile.y * 0.012 + tile.x * 0.006 + tile.z * 0.018,
+        matchTime: 0,
+        matchX: 0,
+        matchY: 0,
+        impacted: false,
         pop: 0,
         shake: 0,
         fade: 0,
@@ -183,7 +200,7 @@ export class BoardRenderer {
       maxY = Math.max(...ys) + 134;
     this.scale = Math.min(
       (width - 32) / (maxX - minX),
-      (height - 14) / (maxY - minY),
+      (height - 40) / (maxY - minY),
       0.85,
     );
     this.board.scale.set(this.scale);
@@ -198,6 +215,13 @@ export class BoardRenderer {
     }
   }
   refresh() {
+    if (this.settings.reducedMotion) {
+      for (const p of this.particles) {
+        p.life = 0;
+        p.sprite.visible = false;
+      }
+      this.comboGlow.visible = false;
+    }
     for (const v of this.views.values()) {
       const free = isFree(v.tile, this.tiles),
         active = v.tile.id === this.selected,
@@ -209,11 +233,16 @@ export class BoardRenderer {
         : this.settings.highContrast
           ? 0x839f8f
           : 0xd4ded1;
-      v.glow.visible = active || hint;
-      v.targetY = active ? -7 : 0;
+      v.glow.visible = active || hint || v.fade > 0;
+      v.container.zIndex =
+        v.fade > 0
+          ? 2000
+          : active
+            ? 1000
+            : v.tile.z * 100 + v.tile.y * 7 + v.tile.x;
+      v.targetY = active && !this.settings.reducedMotion ? -9 : 0;
       if (!v.fade) {
         v.container.alpha = 1;
-        v.container.scale.set(active ? 1.04 : 1);
       }
       v.shadow.alpha = active ? 1 : 0.8;
     }
@@ -234,13 +263,17 @@ export class BoardRenderer {
     }
   }
   remove(ids) {
-    for (const id of ids) {
-      const v = this.views.get(id);
-      if (!v) continue;
-      v.fade = this.settings.reducedMotion ? 0.05 : 0.3;
+    const views = ids.map((id) => this.views.get(id)).filter(Boolean);
+    const centerX = views.reduce((n, v) => n + v.baseX, 0) / views.length;
+    const centerY = views.reduce((n, v) => n + v.baseY, 0) / views.length;
+    for (const v of views) {
+      v.fade = this.settings.reducedMotion ? 0.08 : MATCH_DURATION;
+      v.matchTime = 0;
+      v.impacted = false;
+      v.entered = true;
+      v.matchX = Math.max(-28, Math.min(28, centerX - v.baseX));
+      v.matchY = Math.max(-12, Math.min(12, centerY - v.baseY));
       v.glow.visible = true;
-      const p = this.board.toGlobal({ x: v.baseX + 48, y: v.baseY + 60 });
-      this.burst(p.x, p.y, 16);
     }
     this.selected = null;
     this.hinted = [];
@@ -311,20 +344,70 @@ export class BoardRenderer {
       if (!this.comboLife)
         this.comboLabel.visible = this.comboGlow.visible = false;
     }
+    this.clock += dt;
     for (const v of this.views.values()) {
-      v.dy += (v.targetY - v.dy) * Math.min(1, dt * 22);
-      let dx = 0;
+      if (v.tile.removed && !v.fade) continue;
+      const reduced = this.settings.reducedMotion,
+        active = v.tile.id === this.selected;
+      v.dy = reduced ? 0 : v.dy + (v.targetY - v.dy) * Math.min(1, dt * 24);
+      const targetSize = active && !reduced ? 1.045 : 1;
+      v.size = reduced
+        ? 1
+        : v.size + (targetSize - v.size) * Math.min(1, dt * 22);
+      let dx = 0,
+        dy = v.dy,
+        size = v.size,
+        alpha = 1;
+      v.sheen.alpha = 0;
       if (v.shake > 0) {
-        v.shake -= dt;
-        dx = Math.sin(v.shake * 90) * 3;
+        v.shake = Math.max(0, v.shake - dt);
+        dx = reduced ? 0 : Math.sin(v.shake * 90) * 3;
       }
-      v.container.position.set(v.baseX + dx, v.baseY + v.dy);
+      if (!v.entered) {
+        v.entry += dt;
+        const pose = entrancePose(v.entry, v.delay, v.transition, reduced);
+        dx += pose.x;
+        dy += pose.y;
+        size *= pose.scale;
+        alpha = pose.alpha;
+        v.entered = pose.done;
+      }
+      v.glow.alpha = reduced
+        ? 1
+        : this.hinted.includes(v.tile.id)
+          ? 0.62 + 0.38 * Math.sin(this.clock * 5) ** 2
+          : 1;
       if (v.fade > 0) {
-        v.fade = Math.max(0, v.fade - dt);
-        v.container.alpha = Math.min(1, v.fade / 0.2);
-        v.container.scale.set(1 + (1 - v.fade / 0.3) * 0.07);
-        if (!v.fade) v.container.visible = false;
+        v.matchTime += dt;
+        const pose = matchPose(v.matchTime, reduced);
+        dx = pose.pull * v.matchX;
+        dy = pose.lift + pose.pull * v.matchY;
+        size = pose.scale;
+        alpha = pose.alpha;
+        v.sheen.alpha = pose.flash;
+        v.fade = pose.done
+          ? 0
+          : Math.max(0.001, (reduced ? 0.08 : MATCH_DURATION) - v.matchTime);
+        if (pose.impact && !v.impacted) {
+          v.impacted = true;
+          const point = this.board.toGlobal({
+            x: v.baseX + 48 + dx,
+            y: v.baseY + 60 + dy,
+          });
+          this.burst(point.x, point.y, 20);
+        }
+        if (pose.done) v.container.visible = false;
       }
+      // Center scaling keeps the symbol still and expands the shadow under the lifted tile.
+      v.container.position.set(
+        v.baseX + dx - (size - 1) * 48,
+        v.baseY + dy - (size - 1) * 64,
+      );
+      v.container.scale.set(size);
+      v.container.alpha = alpha;
+      v.shadow.y = -dy * 0.6;
+      v.shadow.alpha = active ? 0.65 : 0.8;
+      v.shadow.scale.set(active && !reduced ? 1.04 : 1);
     }
     for (const p of this.particles) {
       if (p.life <= 0) continue;

@@ -845,3 +845,39 @@ body {
   stroke: currentColor;
   stroke-width: 1.6;
 }
+/* Short transitions keep the controls responsive while complementing canvas motion. */
+@keyframes jade-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+dialog[open] {
+  animation: jade-dialog-in 180ms ease-out;
+}
+.tools button .tool-icon {
+  transition:
+    transform 140ms ease-out,
+    box-shadow 140ms ease-out;
+}
+.tools button:active:not(:disabled) .tool-icon {
+  transform: translateY(2px) scale(0.94);
+}
+@media (prefers-reduced-motion: reduce) {
+  dialog[open] {
+    animation: none;
+  }
+  .tools button .tool-icon {
+    transition: none;
+  }
+  .tools button:active:not(:disabled) .tool-icon {
+    transform: none;
+  }
+}
+.reduced-motion .tools button:active:not(:disabled) .tool-icon {
+  transform: none;
+}

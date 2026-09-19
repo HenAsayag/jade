@@ -11,7 +11,7 @@ function assert(condition, message) {
 async function ready() {
   for (let i = 0; i < 200; i++) {
     if (frame.contentWindow.jadeTest) return frame.contentWindow.jadeTest;
-    await delay(100);
+    await delay(400);
   }
   throw Error("Startup timeout: " + frame.contentDocument.body.textContent);
 }
@@ -40,6 +40,18 @@ try {
     api.game.tiles.filter((t) => !t.removed).length === total - 2 &&
       api.game.score === 100,
     "Legal pair removes exactly two tiles and scores",
+  );
+  const leaving = ids.map((id) => api.renderer.views.get(id));
+  assert(
+    leaving.every(
+      (v) => v.container.visible && v.container.eventMode === "none",
+    ),
+    "Matched tiles animate without intercepting another tap",
+  );
+  await delay(400);
+  assert(
+    leaving.every((v) => !v.container.visible),
+    "Match animations finish and remove their visuals",
   );
   api.undo();
   assert(
@@ -160,7 +172,7 @@ try {
     await delay(150);
     api.closeModal();
     api.newGame(0);
-    await delay(100);
+    await delay(400);
     for (const id of api.game.solution[0]) {
       const point = api.renderer.views
         .get(id)
@@ -183,7 +195,7 @@ try {
     }
     assert(
       api.game.score === 100,
-      `Touch coordinate mapping survives resize to ${width} × ${height} (score ${api.game.score})`,
+      `Touch coordinate mapping survives resize to ${width} × ${height} (score ${api.game.score}; ${frame.contentDocument.querySelector("#message").textContent})`,
     );
     const board = api.renderer.board.getBounds();
     const host = api.renderer.host;

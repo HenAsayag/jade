@@ -42,3 +42,7 @@ Desktop browser emulation does not establish actual iPhone/Android GPU performan
 - `source-kit/` — unmodified first ZIP for provenance and design reference; not copied to deployment.
 
 Tile references are packed into a shared texture atlas at startup with rounded alpha bounds. Original illustrated symbols, porcelain faces, jade edges and gold accents are retained. The renderer is vendored under its MIT license in `vendor/PIXI-LICENSE.txt`. No assets or instructions from the Cosmic Coop ZIP are used.
+
+## Animation pass
+
+Tiles use a short staggered entrance, eased selection lift with a grounded shadow, pulsing hints, and a 340 ms match sequence (lift, inward draw, porcelain highlight, sparkles, dissolve). Shuffle uses a brief settling motion. Removed tiles immediately stop receiving input, so visual feedback does not block the next match. Reduced-motion mode removes translation, scaling, pulses, flashes, and particles; matches use a quick opacity transition.
