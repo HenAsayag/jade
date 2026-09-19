@@ -131,6 +131,7 @@ export class BoardRenderer {
       this.app,
       this.settings,
       this.comboGlow.texture,
+      this.shardTexture,
     );
     this.app.ticker.add((t) => this.tick(t.elapsedMS));
     this.resizeObserver = new ResizeObserver(() => this.resize());
@@ -315,7 +316,10 @@ export class BoardRenderer {
       v.glow.tint = active ? 0xd7ef83 : 0xffffff;
       v.halo.alpha = active ? 0.22 : 0;
       // Preserve real Mahjong layer order during entry and selection.
-      v.container.zIndex = v.tile.z * 100 + v.tile.y * 7 + v.tile.x;
+      v.container.zIndex =
+        v.fade > 0
+          ? 2000 + v.tile.id
+          : v.tile.z * 100 + v.tile.y * 7 + v.tile.x;
       v.targetY = 0;
       if (!v.fade && v.entered) v.container.alpha = 1;
       v.shadow.alpha = active ? 1 : 0.8;
@@ -338,25 +342,29 @@ export class BoardRenderer {
   }
   remove(ids, reward = 0) {
     this.pressed = null;
-    let rewarded = false;
-    for (const id of ids) {
-      const v = this.views.get(id);
-      if (!v) continue;
-      v.fade = MATCH_DURATION;
+    const views = ids.map((id) => this.views.get(id)).filter(Boolean);
+    const centerX = views.reduce((sum, v) => sum + v.baseX, 0) / views.length;
+    const centerY = views.reduce((sum, v) => sum + v.baseY, 0) / views.length;
+    views.forEach((v, index) => {
+      v.fade = this.settings.reducedMotion ? 0.09 : MATCH_DURATION;
       v.matchTime = 0;
       v.entered = true;
       v.selection = 0;
       v.halo.alpha = 0;
+      v.matchX = centerX - v.baseX;
+      v.matchY = centerY - v.baseY;
+      v.impacted = false;
+      v.impactLeader = index === 0;
+      v.matchReward = reward;
       v.container.position.set(v.baseX, v.baseY);
       v.container.scale.set(1);
-      const x = this.board.x + (v.baseX + 48) * this.scale,
-        y = this.board.y + (v.baseY + 60) * this.scale;
-      this.matchEffects.spawn(x, y, 90 * this.scale, this.quality);
-      if (reward && !rewarded) {
-        this.matchEffects.reward(x, Math.max(16, y - 14), reward);
-        rewarded = true;
-      }
-    }
+      if (this.settings.reducedMotion && index === 0 && reward)
+        this.matchEffects.reward(
+          this.board.x + (centerX + 48) * this.scale,
+          this.board.y + (centerY + 60) * this.scale,
+          reward,
+        );
+    });
     this.selected = null;
     this.hinted = [];
     this.refresh();
@@ -476,14 +484,24 @@ export class BoardRenderer {
       if (v.fade > 0) {
         v.matchTime += animationDt;
         const pose = matchPose(v.matchTime, reduced);
-        dx = 0;
-        dy = 0;
+        dx = pose.pull * v.matchX;
+        dy = pose.pull * v.matchY + pose.lift;
         size = pose.scale;
         alpha = pose.alpha;
         v.sheen.alpha = pose.flash;
         v.fade = pose.done
           ? 0
           : Math.max(0.001, (reduced ? 0.08 : MATCH_DURATION) - v.matchTime);
+        if (pose.impact && !v.impacted) {
+          v.impacted = true;
+          if (v.impactLeader) {
+            const x = this.board.x + (v.baseX + v.matchX + 48) * this.scale,
+              y = this.board.y + (v.baseY + v.matchY + 60) * this.scale;
+            this.matchEffects.shatter(x, y, 90 * this.scale, this.quality);
+            if (v.matchReward)
+              this.matchEffects.reward(x, Math.max(16, y - 12), v.matchReward);
+          }
+        }
         if (pose.done) v.container.visible = false;
       }
       // Center scaling keeps the symbol still and expands the shadow under the lifted tile.
@@ -493,7 +511,7 @@ export class BoardRenderer {
       );
       v.container.scale.set(size);
       v.container.alpha = alpha;
-      v.shadow.y = -dy * 0.6;
+      v.shadow.y = v.fade > 0 ? 0 : -dy * 0.6;
       v.shadow.alpha = active ? 1 : 0.8;
       v.shadow.scale.set(1);
     }

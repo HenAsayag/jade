@@ -1,7 +1,7 @@
 import { Container, Sprite, Graphics, Text } from "../vendor/pixi.mjs";
 import { clamp, easeOut } from "./motion.js";
 export class MatchEffects {
-  constructor(app, settings, glowTexture) {
+  constructor(app, settings, glowTexture, shardTexture) {
     this.settings = settings;
     this.layer = new Container();
     this.layer.eventMode = "none";
@@ -26,11 +26,13 @@ export class MatchEffects {
       sparkle: app.renderer.generateTexture(sparkle),
       flash: glowTexture,
       glow: glowTexture,
+      shard: shardTexture,
     };
     flower.destroy();
     petal.destroy();
     sparkle.destroy();
     for (const [kind, count] of Object.entries({
+      shard: 96,
       petal: 48,
       flower: 20,
       sparkle: 30,
@@ -78,7 +80,11 @@ export class MatchEffects {
     }
   }
   emit(kind, x, y, duration, delay, dx = 0, dy = 0, size = 1) {
-    const p = this.pools[kind].find((p) => !p.active);
+    let p = this.pools[kind].find((p) => !p.active);
+    if (!p && kind === "shard")
+      p = this.pools.shard.reduce((oldest, item) =>
+        item.age > oldest.age ? item : oldest,
+      );
     if (!p) return null;
     Object.assign(p, {
       active: true,
@@ -137,6 +143,44 @@ export class MatchEffects {
           size * Math.min(1.3, s),
         );
       }
+    }
+  }
+  shatter(x, y, tileWidth, quality) {
+    if (this.settings.reducedMotion) return;
+    this.emit("flash", x, y, 0.13, 0, 0, 0, (tileWidth / 128) * 1.6);
+    if (quality > 0)
+      this.emit("glow", x, y, 0.24, 0, 0, 0, (tileWidth / 128) * 1.9);
+    const count = quality === 0 ? 12 : 24;
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2,
+        distance = 25 + Math.random() * 42;
+      const p = this.emit(
+        "shard",
+        x,
+        y,
+        0.3 + Math.random() * 0.16,
+        0,
+        Math.cos(angle) * distance,
+        Math.sin(angle) * distance,
+        0.7 + Math.random() * 0.8,
+      );
+      if (p) {
+        p.sprite.tint = Math.random() < 0.28 ? 0x78bba4 : 0xffefcb;
+        p.spin = (Math.random() - 0.5) * 5;
+      }
+    }
+    for (let i = 0; i < 6; i++) {
+      const a = Math.random() * Math.PI * 2;
+      this.emit(
+        "sparkle",
+        x,
+        y,
+        0.25,
+        0,
+        Math.cos(a) * 35,
+        Math.sin(a) * 35,
+        0.65,
+      );
     }
   }
   reward(x, y, amount) {

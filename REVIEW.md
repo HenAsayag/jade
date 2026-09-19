@@ -20,3 +20,7 @@ Reviewed the animation changes for input responsiveness, lifetime/cleanup, and r
 ## Fast floral correction pass
 
 Reviewed against the supplied animation correction specification. Fixed native touch-cancellation/pause preview cleanup, duration-based animation time under slow frames, and landscape combo placement. Core rules, generation, scoring multiplier, progression, and unobserved animations were preserved. Browser acceptance verifies three rapid matches with overlapping local floral effects, immediate hitbox release, continued score counting and HUD combo updates. Manual pointer testing also completed three consecutive pairs without waiting for their effects.
+
+## Collision animation requested afterward
+
+The user explicitly reversed the prior no-flight requirement. Matched tiles now accelerate to a shared midpoint, collide once at 240 ms, and shatter into pooled ceramic pieces before disappearing by 360 ms. Input remains independent. Review identified rapid-chain shard exhaustion; the pool now holds 96 shards and recycles its oldest shards when full, ensuring every collision has debris. Reduced motion retains an in-place fade.

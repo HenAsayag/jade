@@ -1,18 +1,28 @@
-export const MATCH_DURATION = 0.09;
+export const MATCH_DURATION = 0.36;
+export const IMPACT_TIME = 0.24;
 export const clamp = (n) => Math.max(0, Math.min(1, n));
 export const easeOut = (n) => 1 - (1 - clamp(n)) ** 3;
 export function matchPose(elapsed, reduced = false) {
-  const p = clamp(elapsed / MATCH_DURATION);
+  if (reduced)
+    return {
+      pull: 0,
+      lift: 0,
+      scale: 1,
+      alpha: 1 - easeOut(elapsed / 0.09),
+      flash: 0,
+      impact: false,
+      done: elapsed >= 0.09,
+    };
+  const travel = clamp(elapsed / IMPACT_TIME),
+    after = clamp((elapsed - IMPACT_TIME) / (MATCH_DURATION - IMPACT_TIME));
   return {
-    pull: 0,
-    lift: 0,
-    scale: 1,
-    alpha: 1 - easeOut((elapsed - 0.035) / 0.055),
-    flash: reduced
-      ? 0
-      : 0.48 * Math.sin(Math.PI * clamp((elapsed - 0.02) / 0.06)),
-    impact: elapsed >= 0.03,
-    done: p === 1,
+    pull: travel * travel,
+    lift: -Math.sin(travel * Math.PI) * 16,
+    scale: 1 + 0.045 * Math.sin(travel * Math.PI) - 0.25 * easeOut(after),
+    alpha: 1 - easeOut(after),
+    flash: 0.75 * Math.sin(Math.PI * clamp((elapsed - 0.21) / 0.1)),
+    impact: elapsed >= IMPACT_TIME,
+    done: elapsed >= MATCH_DURATION,
   };
 }
 export function entrancePose(

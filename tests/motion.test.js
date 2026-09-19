@@ -6,19 +6,27 @@ import {
   MATCH_DURATION,
   ScoreTween,
 } from "../js/motion.js";
-test("matches disappear in place by 90ms with no lift, convergence, or scaling", () => {
-  assert.equal(MATCH_DURATION, 0.09);
-  for (let t = 0; t <= 0.1; t += 0.005) {
-    const p = matchPose(t);
-    assert.equal(p.pull, 0);
-    assert.equal(p.lift, 0);
-    assert.equal(p.scale, 1);
-    assert.ok(p.alpha >= 0 && p.alpha <= 1);
+test("tiles converge fully before shattering and fade by 360ms", () => {
+  assert.equal(MATCH_DURATION, 0.36);
+  const flight = matchPose(0.12),
+    impact = matchPose(0.24),
+    end = matchPose(0.36);
+  assert.ok(flight.pull > 0 && flight.pull < 1 && flight.lift < 0);
+  assert.equal(flight.alpha, 1);
+  assert.equal(flight.impact, false);
+  assert.equal(impact.pull, 1);
+  assert.equal(impact.impact, true);
+  assert.equal(impact.alpha, 1);
+  assert.equal(end.alpha, 0);
+  assert.equal(end.done, true);
+  for (const [a, b] of [
+    [0, 500],
+    [100, 100],
+    [400, -40],
+  ]) {
+    const mid = (a + b) / 2;
+    assert.equal(a + (mid - a) * impact.pull, b + (mid - b) * impact.pull);
   }
-  assert.equal(matchPose(0.02).alpha, 1);
-  assert.ok(matchPose(0.05).flash > 0);
-  assert.equal(matchPose(0.09).alpha, 0);
-  assert.equal(matchPose(0.09).done, true);
 });
 test("reduced motion removes flashes and travel without slowing removal", () => {
   assert.equal(matchPose(0.04, true).flash, 0);

@@ -45,12 +45,12 @@ Tile references are packed into a shared texture atlas at startup with rounded a
 
 ## Animation correction pass
 
-The authoritative correction specification is in `docs/animation-correction-spec.txt`. Selection begins on pointer-down with a soft lime face tint and yellow-green edge/halo, with no lift. Native cancellation and pause clear touch previews.
+The historical correction specification is in `docs/animation-correction-spec.txt`. The latest user request overrides its in-place removal rule: matched tiles now fly together and shatter. Selection begins on pointer-down with a soft lime face tint and yellow-green edge/halo, with no lift. Native cancellation and pause clear touch previews.
 
-Matched tiles remain at their original coordinates and disappear within 90 ms. Both locations independently emit pooled blossoms, petals, sparkles, a short flash, and a soft glow lasting up to 420 ms. Removed hitboxes are disabled immediately; consecutive pairs can overlap their effects. Low quality halves petals and removes the secondary glow without changing match timing. Reduced motion removes decorative motion and flashes.
+Matched tiles accelerate toward a shared midpoint over 240 ms, collide with a flash and pooled ivory/jade shards, then disappear by 360 ms. Hitboxes are removed immediately, so new pairs can be selected during flight and multiple collisions can coexist. Reduced motion keeps the fast in-place fade without travel or shattering.
 
 The score counts toward its newest target over 300 ms, retargeting from its current displayed value. Local point rewards float for 400 ms. The top HUD combo crossfades and punches its number over 180 ms. The displayed chain count can exceed the existing 5× scoring multiplier; score rules are unchanged.
 
 New boards assemble from five outer-screen directions over approximately 360–420 ms, with lower layers settling first and upper layers always rendered above them. Hint, shuffle, undo, blocked-tile, mismatch, and completion behavior are preserved.
 
-The browser suite also checks native pointer cancellation, two independent match-effect origins, rapid three-pair chaining, overlapping particles, score continuity, bounded pools, reduced-motion behavior, and slow-frame removal timing.
+The browser suite checks shared collision positions, continued play during flight, one impact per pair, overlapping shard bursts, fixed pool sizes, and reduced-motion fallback.
