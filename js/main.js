@@ -8,6 +8,7 @@ import {
 } from "./board.js";
 import { load, save, localDate } from "./storage.js";
 import { AudioManager } from "./audio.js";
+import { HudFeedback } from "./hud-feedback.js";
 import { BoardRenderer } from "./renderer.js";
 document.querySelector("#loading p").textContent = "Creating your WebGL garden";
 const $ = (id) => document.getElementById(id),
@@ -37,6 +38,13 @@ let game,
   keyboardIndex = -1;
 let completionTimer;
 const renderer = new BoardRenderer($("board"), data.settings, selectTile);
+const hud = new HudFeedback(
+  $("score"),
+  document.querySelector(".board-mark"),
+  data.settings,
+);
+renderer.onFrame = (dt) => hud.tick(dt);
+renderer.onResize = () => hud.resize($("board"));
 function persist() {
   if (game) data.session = structuredClone(game);
   save(data);
@@ -60,7 +68,7 @@ function formatTime(seconds) {
 function update() {
   const remaining = game.tiles.filter((t) => !t.removed).length;
   $("remaining").textContent = remaining;
-  $("score").textContent = game.score.toLocaleString();
+  hud.setScore(game.score);
   $("timer").textContent = formatTime(game.elapsed);
   $("undo").disabled = !game.history.length || remaining === 0;
   $("hint").disabled = remaining === 0;
@@ -82,6 +90,7 @@ function update() {
 }
 function newGame(level = 0, daily = false) {
   clearTimeout(completionTimer);
+  hud.reset();
   const date = localDate(),
     seed = daily ? `jade-daily-${date}` : `jade-${level}-${Date.now()}`;
   if (daily) level = Number(date.replaceAll("-", "")) % 12;
@@ -156,13 +165,15 @@ function selectTile(id) {
     const first = game.tiles.find((t) => t.id === selected);
     if (matches(first, tile)) {
       const now = performance.now();
-      combo = now - lastMatch < 5000 ? Math.min(combo + 1, 5) : 1;
+      const continues = now - lastMatch < 5000 && combo > 0;
+      combo = continues ? Math.min(combo + 1, 5) : 1;
+      hud.combo(continues);
       lastMatch = now;
       game.history.push({ ids: [first.id, tile.id], score: game.score });
       first.removed = tile.removed = true;
       game.score += 100 * combo;
-      renderer.remove([first.id, tile.id]);
-      if (combo > 1) renderer.showCombo(combo);
+      renderer.remove([first.id, tile.id], 100 * combo);
+
       audio.play("match", combo);
       vibrate(12);
       selected = null;

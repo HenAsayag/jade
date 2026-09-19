@@ -1,0 +1,777 @@
+ANIMATION / GAME-FEEL CORRECTION PASS
+Jade Match — WebGL Mobile
+
+IMPORTANT:
+The existing game logic, board generator, solver, UI structure,
+assets, responsive behavior and progression system are already built.
+
+DO NOT rebuild the game.
+
+Your task is ONLY to revise the gameplay animations, timing and feedback
+to accurately match the reference gameplay video.
+
+The current animations feel different from the reference.
+
+Treat the following specification as an override for the previous
+animation rules.
+
+========================================================
+1. PRIMARY PRINCIPLE
+========================================================
+
+The reference game is much faster and more responsive than a typical
+"cinematic" tile matching game.
+
+Do NOT make matching feel heavy.
+
+Do NOT animate the two matched tiles flying toward one another.
+
+Do NOT pause gameplay while match particles are playing.
+
+The sequence should be:
+
+TAP
+→ instant highlight
+→ TAP matching tile
+→ pair disappears almost immediately
+→ flower/glow VFX continues
+→ player can already select the next pair
+
+Gameplay input and visual effects must run independently.
+
+========================================================
+2. FIRST TILE SELECTION
+========================================================
+
+When a valid free tile is tapped:
+
+Response must begin on the same rendered frame whenever possible.
+
+Target perceived latency:
+0–33 ms.
+
+DO NOT make the tile jump upward by 6–8 px.
+
+DO NOT use a large scale bounce.
+
+The reference selection is primarily VISUAL HIGHLIGHTING.
+
+Apply:
+
+- light lime-green tint across tile face
+- warm yellow-green glow around outer tile edge
+- soft bright halo behind tile
+- slightly stronger shadow
+- optional extremely subtle scale:
+  1.00 → 1.015
+
+Transition duration:
+approximately 70–100 ms.
+
+Use an easeOutQuad / easeOutCubic style transition.
+
+The selected tile must remain highlighted until:
+
+- a matching second tile is selected
+- another valid first tile replaces it
+- selection is cancelled
+
+The highlight should be obvious even on a small phone screen.
+
+Suggested visual treatment:
+
+faceTint = soft lime green
+outerGlow = yellow-green
+glowAlpha ≈ 0.65–0.85
+
+Do NOT turn the entire tile neon.
+
+The original symbol must remain fully readable.
+
+========================================================
+3. SECOND TILE — SUCCESSFUL MATCH
+========================================================
+
+This is the most important correction.
+
+When the player taps a matching second tile:
+
+DO NOT:
+
+- move both tiles toward the center
+- rotate them dramatically
+- make them collide
+- make them explode into ceramic shards
+- wait for the animation before accepting new input
+
+Instead use a FAST IN-PLACE disappearance.
+
+Approximate sequence:
+
+T = 0 ms
+Second matching tile is tapped.
+
+T = 0–33 ms
+Both tiles receive match confirmation.
+
+T = 30–70 ms
+Short white/yellow flash appears over BOTH tile locations.
+
+T = 50–100 ms
+Matched tiles disappear from the board.
+
+T = 60–400 ms
+Particles and glow continue WITHOUT the tiles.
+
+The tiles should therefore be gone very quickly,
+while the decorative VFX lingers behind.
+
+========================================================
+4. MATCH VFX — CHANGE CURRENT EFFECT
+========================================================
+
+Replace the current heavy shard/explosion effect.
+
+The reference match effect is elegant and floral.
+
+At EACH removed tile position create:
+
+LAYER 1 — FLASH
+small soft white/yellow radial flash
+
+duration:
+80–140 ms
+
+LAYER 2 — GOLDEN GLOW
+warm yellow/gold light bloom
+
+duration:
+180–280 ms
+
+LAYER 3 — PINK FLOWER BURST
+small pink blossom sprites appear around the original tile position
+
+Use approximately:
+2–4 flower/blossom sprites
+
+They should:
+- appear quickly
+- move slightly outward
+- rotate subtly
+- fade
+
+LAYER 4 — PETALS
+approximately:
+5–10 pink petal sprites
+
+Petals should:
+
+- move outward 15–45 px
+- have slight random rotation
+- drift upward or sideways
+- some may fall slightly
+- fade smoothly
+
+Duration:
+220–420 ms
+
+LAYER 5 — SMALL SPARKLES
+approximately:
+2–5 small golden/white sparkles
+
+Very lightweight.
+
+Do NOT cover surrounding tile symbols.
+
+========================================================
+5. BOTH MATCH LOCATIONS MUST HAVE VFX
+========================================================
+
+The reference effect is tied to the original positions of the removed
+tiles.
+
+Do not create one large explosion at the center of the board.
+
+If pair A is at position P1 and P2:
+
+spawnMatchEffect(P1)
+spawnMatchEffect(P2)
+
+Each effect should be relatively small.
+
+This preserves spatial feedback:
+the player immediately understands which two tiles disappeared.
+
+========================================================
+6. NO INPUT LOCK DURING PARTICLES
+========================================================
+
+CRITICAL.
+
+Particles are cosmetic.
+
+They must NEVER control gameplay timing.
+
+Once the matched tiles have been logically removed and the next
+available tiles are calculated:
+
+allow the player to interact immediately.
+
+Target:
+
+next player selection should be possible within roughly
+50–100 ms after match confirmation.
+
+The previous flower/petal particles may still be active.
+
+This behavior is visible in the reference:
+
+the player begins selecting the NEXT pair while the previous
+match VFX is still fading.
+
+Therefore support overlapping match effects.
+
+Example:
+
+Match #1 particles still active
++
+player selects Match #2
++
+Match #2 starts
++
+both particle systems coexist briefly.
+
+This is intentional.
+
+========================================================
+7. PARTICLE POOLING — WEBGL
+========================================================
+
+Because this is a WebGL mobile game,
+do not allocate and destroy particle objects on every match.
+
+Create pools for:
+
+- petals
+- blossoms
+- sparkles
+- radial flashes
+
+Recommended:
+
+PetalPool: 30–50 sprites
+SparklePool: 20–30 sprites
+FlowerPool: 12–20 sprites
+
+Reuse sprites.
+
+All particles must be WebGL sprites.
+
+Avoid DOM elements.
+
+Avoid expensive real-time blur filters.
+
+Prefer pre-rendered glow textures with additive/screen blending.
+
+========================================================
+8. NEWLY EXPOSED TILES
+========================================================
+
+When removing a pair exposes lower tiles:
+
+DO NOT animate the new tiles flying into place.
+
+They are already physically present underneath.
+
+The correct effect is simply:
+
+top tile disappears
+→ underlying tile becomes visible/free.
+
+Optional:
+very subtle brightness restoration:
+
+opacity/tint transition:
+80–120 ms
+
+But no bounce.
+
+No spawn animation.
+
+No repositioning.
+
+========================================================
+9. SCORE COUNTER
+========================================================
+
+Do not instantly change:
+
+13200 → 13800
+
+Tween the displayed value.
+
+Example:
+
+13200
+13265
+13385
+13510
+13650
+13750
+13800
+
+Duration:
+approximately 250–350 ms.
+
+Use an easeOut curve.
+
+Internally the score value may update immediately.
+
+Only the displayed number is animated.
+
+If another match happens before the counter finishes:
+
+DO NOT cancel and restart from the old value.
+
+Continue smoothly from the currently displayed value
+toward the newest target.
+
+========================================================
+10. FLOATING MATCH REWARD
+========================================================
+
+Display the earned amount near the match VFX.
+
+Example:
+
++600
+
+Style:
+
+- golden yellow
+- bold
+- subtle dark shadow/outline
+- smaller than Combo text
+
+Animation:
+
+start:
+opacity 0
+scale 0.8
+
+quickly:
+opacity 1
+scale 1.05
+
+then:
+move upward approximately 15–25 px
+
+fade out.
+
+Total duration:
+approximately 300–450 ms.
+
+The text should appear near the removed tiles,
+NOT in a modal or center popup.
+
+========================================================
+11. COMBO ANIMATION
+========================================================
+
+Combo is shown near the top-center gameplay HUD.
+
+Example:
+
+Combo 15
+Combo 16
+Combo 17
+
+When combo increases:
+
+the NEW combo number should perform a short punch animation.
+
+Recommended timing:
+
+0 ms:
+new text becomes visible
+
+0–80 ms:
+scale 0.75 → 1.15
+
+80–180 ms:
+scale 1.15 → 1.00
+
+Use:
+easeOutBack / custom overshoot easing
+
+Style:
+
+"Combo"
+smaller
+
+number:
+larger
+bold
+gold / yellow
+
+Use:
+light cream/yellow face
+warm orange/gold gradient
+dark reddish/brown outline or shadow
+
+Do NOT create a large center-screen banner.
+
+Do NOT pause gameplay.
+
+========================================================
+12. COMBO TRANSITION
+========================================================
+
+When changing:
+
+Combo 15 → Combo 16
+
+Do not instantly replace static text.
+
+Use a very short transition.
+
+Old number:
+opacity 1 → 0
+scale 1 → 0.9
+
+New number:
+scale 0.75 → 1.15 → 1
+opacity 0 → 1
+
+The new value should feel like a small arcade reward.
+
+Total transition:
+roughly 150–220 ms.
+
+========================================================
+13. BOARD ENTRY ANIMATION
+========================================================
+
+When the level begins,
+the final board must NOT simply fade in.
+
+The reference board is assembled dynamically.
+
+Start with an empty gameplay area.
+
+Then tiles fly toward their final coordinates from multiple
+off-screen / outer-board directions.
+
+Use:
+
+left
+right
+bottom
+upper-left
+upper-right
+
+Do NOT send every tile from the exact same origin.
+
+Tiles should remain close to final size while travelling.
+
+Do not scale from 0.
+
+Recommended:
+
+startScale:
+0.95–1.0
+
+endScale:
+1.0
+
+Movement duration per tile:
+approximately 280–420 ms.
+
+Use:
+easeOutCubic
+
+Add a tiny stagger:
+
+approximately 5–15 ms per cluster,
+NOT a slow one-by-one sequence.
+
+Many tiles should move simultaneously.
+
+The entire board should become playable in roughly:
+350–500 ms.
+
+Do not make the player wait several seconds.
+
+========================================================
+14. BOARD ENTRY Z ORDER
+========================================================
+
+Respect actual Mahjong layers during arrival.
+
+Lower Z tiles should visually settle first or at the same time.
+
+Upper layers should always render above lower layers during flight.
+
+Never allow a lower tile sprite to incorrectly pass visually
+in front of a higher Z tile.
+
+========================================================
+15. DO NOT SHAKE THE CAMERA
+========================================================
+
+The reference gameplay remains visually stable.
+
+Do NOT:
+
+- shake the entire board
+- zoom the camera on every match
+- rotate the board
+- pulse the whole screen
+
+All feedback is LOCALIZED to:
+
+- selected tile
+- removed tile locations
+- score
+- combo
+
+This keeps the game calm and readable.
+
+========================================================
+16. SUPPORT RAPID CHAIN MATCHING
+========================================================
+
+The animation system must support very fast players.
+
+Example:
+
+Match A at 0 ms
+
+Match A petals:
+0–350 ms
+
+Player selects Match B:
+100 ms
+
+Match B removal:
+170 ms
+
+Match B petals:
+170–520 ms
+
+Player selects Match C:
+260 ms
+
+This means:
+
+MULTIPLE PARTICLE SYSTEMS MAY BE ACTIVE AT ONCE.
+
+Do not use a global:
+isAnimating = true
+
+that blocks all interaction.
+
+Instead separate:
+
+gameplayState
+from
+cosmeticAnimationState.
+
+========================================================
+17. TILE HITBOX AFTER REMOVAL
+========================================================
+
+As soon as a matched tile begins disappearing:
+
+disable its hitbox immediately.
+
+Underlying newly-free tile hit testing must update as soon as
+logical removal occurs.
+
+Visual particles must not receive pointer events.
+
+This avoids ghost taps during rapid play.
+
+========================================================
+18. MOBILE TOUCH PRIORITY
+========================================================
+
+This is WebGL + mobile-first.
+
+All animations must feel responsive under touch.
+
+On pointerdown / touch:
+
+show visual feedback immediately.
+
+Do not wait for pointerup before giving the first visual response.
+
+Final selection may be committed on pointerup if required,
+but the player must perceive instant response.
+
+Keep hit areas larger than the visible tile where possible,
+without overlapping neighboring tile priority incorrectly.
+
+========================================================
+19. PERFORMANCE BUDGET
+========================================================
+
+Target:
+60 FPS.
+
+A normal successful match should create approximately:
+
+2 radial flashes
+4–8 blossom sprites total
+10–20 petal sprites total
+4–10 small sparkles total
+
+Not hundreds of particles.
+
+LOW quality mode:
+
+50% fewer petals
+no soft additive secondary glow
+fewer sparkles
+
+But NEVER change gameplay timing.
+
+========================================================
+20. REMOVE THESE PREVIOUS BEHAVIORS
+========================================================
+
+If currently implemented, remove or greatly reduce:
+
+- matched tiles flying toward one another
+- large ceramic shard explosion
+- long tile lift animations
+- large tile scale-up
+- animation input locks
+- slow match confirmation
+- board-wide screen shake
+- large camera zoom
+- delayed availability of exposed tiles
+- waiting for particles before next move
+
+These do NOT match the supplied reference video.
+
+========================================================
+21. TIMING SUMMARY
+========================================================
+
+FIRST TAP
+
+0 ms:
+input
+
+0–33 ms:
+visible response begins
+
+70–100 ms:
+selected highlight fully established
+
+
+SUCCESSFUL SECOND TAP
+
+0 ms:
+match confirmation
+
+30–70 ms:
+flash
+
+50–100 ms:
+tiles visually removed
+
+60–400 ms:
+flowers / petals / glow continue
+
+50–100 ms:
+next gameplay input already permitted
+
+
+SCORE
+
+250–350 ms:
+counter reaches new score
+
+
++POINTS FLOAT
+
+300–450 ms:
+rise + fade
+
+
+COMBO
+
+150–220 ms:
+pop / settle
+
+
+LEVEL BOARD ENTRY
+
+350–500 ms:
+full board assembly complete
+
+========================================================
+22. MOST IMPORTANT ACCEPTANCE TEST
+========================================================
+
+Perform this manual test:
+
+Make several pairs very quickly.
+
+The expected result is:
+
+- selection always reacts instantly
+- matched tiles disappear almost immediately
+- petals remain behind
+- next pair can be selected while previous petals are still visible
+- multiple match effects can overlap
+- score continues counting upward
+- Combo continues popping to the next number
+- board itself never freezes
+- no animation waits for another animation to finish
+
+If the game makes the player wait for the visual effect,
+the implementation is incorrect.
+
+========================================================
+23. DO NOT CHANGE UNOBSERVED ANIMATIONS
+========================================================
+
+The supplied reference video does NOT clearly demonstrate:
+
+- Hint animation
+- Shuffle animation
+- Undo animation
+- blocked-tile animation
+- mismatch animation
+
+Do not redesign these based on assumptions during this pass.
+
+Only correct the animation behaviors explicitly described above.
+
+========================================================
+FINAL GOAL
+========================================================
+
+The game should feel much faster than it looks.
+
+The visual style is calm,
+but the interaction loop is extremely responsive.
+
+The player should feel:
+
+tap
+tap
+success
+tap
+tap
+success
+tap
+tap
+success
+
+with floral effects flowing continuously behind the interaction.
+
+The cosmetic VFX should NEVER become the speed limit of gameplay.

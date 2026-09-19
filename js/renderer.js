@@ -7,6 +7,7 @@ import {
   Graphics,
   Text,
 } from "../vendor/pixi.mjs";
+import { MatchEffects } from "./match-effects.js";
 import { SYMBOLS, isFree } from "./board.js";
 import { matchPose, entrancePose, MATCH_DURATION } from "./motion.js";
 export class BoardRenderer {
@@ -26,6 +27,10 @@ export class BoardRenderer {
     this.slowTime = 0;
     this.scale = 1;
     this.destroyed = false;
+    this.cancelPress = () => {
+      this.pressed = null;
+      if (this.board) this.refresh();
+    };
   }
   async init(progress) {
     await this.app.init({
@@ -38,6 +43,8 @@ export class BoardRenderer {
       height: this.host.clientHeight,
     });
     this.host.append(this.app.canvas);
+    this.app.canvas.addEventListener("pointercancel", this.cancelPress);
+    this.app.canvas.addEventListener("touchcancel", this.cancelPress);
     this.app.canvas.setAttribute("aria-hidden", "true");
     const manifest = await (await fetch("assets/manifest.json")).json();
     const atlas = document.createElement("canvas");
@@ -77,6 +84,8 @@ export class BoardRenderer {
     this.board.sortableChildren = true;
     this.clock = 0;
     this.fx = new Container();
+    this.fx.eventMode = "none";
+    this.pressed = null;
     this.app.stage.addChild(this.board, this.fx);
     const dot = new Graphics().circle(4, 4, 4).fill(0xffffff);
     this.particleTexture = this.app.renderer.generateTexture(dot);
@@ -118,13 +127,20 @@ export class BoardRenderer {
       this.fx.addChild(sprite);
       this.particles.push({ sprite, life: 0, vx: 0, vy: 0, total: 0 });
     }
-    this.app.ticker.add((t) => this.tick(t.deltaMS));
+    this.matchEffects = new MatchEffects(
+      this.app,
+      this.settings,
+      this.comboGlow.texture,
+    );
+    this.app.ticker.add((t) => this.tick(t.elapsedMS));
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(this.host);
     this.resize();
     progress(100);
   }
   setBoard(tiles, { transition = "none" } = {}) {
+    this.matchEffects.clear();
+    this.pressed = null;
     this.comboLife = 0;
     this.comboLabel.visible = this.comboGlow.visible = false;
     for (const p of this.particles) {
@@ -151,12 +167,42 @@ export class BoardRenderer {
       const sheen = new Graphics().roundRect(5, 4, 87, 119, 10).fill(0xfff4cd);
       sheen.alpha = 0;
       sheen.eventMode = "none";
-      container.addChild(shadow, glow, sprite, sheen);
+      const halo = new Sprite(this.comboGlow.texture);
+      halo.anchor.set(0.5);
+      halo.position.set(48, 64);
+      halo.width = 136;
+      halo.height = 166;
+      halo.tint = 0xd5ec8b;
+      halo.alpha = 0;
+      halo.eventMode = "none";
+      container.addChild(halo, shadow, glow, sprite, sheen);
       container.zIndex = tile.z * 100 + tile.y * 7 + tile.x;
       container.eventMode = "static";
       container.cursor = "pointer";
       container.hitArea = new Rectangle(0, 0, 98, 132);
-      container.on("pointertap", () => this.onSelect(tile.id));
+      container.on("pointerdown", (event) => {
+        if (
+          this.pressed !== null ||
+          event.isPrimary === false ||
+          !isFree(tile, this.tiles)
+        )
+          return;
+        this.pressed = tile.id;
+        this.pressPointer = event.pointerId;
+        this.refresh();
+      });
+      const release = (event) => {
+        if (event.pointerId === this.pressPointer) {
+          this.pressed = null;
+          this.refresh();
+        }
+      };
+      container.on("pointerup", release);
+      container.on("pointerupoutside", release);
+      container.on("pointercancel", release);
+      container.on("pointertap", (event) => {
+        if (event.isPrimary !== false) this.onSelect(tile.id);
+      });
       glow.visible = false;
       this.board.addChild(container);
       this.views.set(tile.id, {
@@ -170,11 +216,17 @@ export class BoardRenderer {
         dy: 0,
         targetY: 0,
         sheen,
+        halo,
+        selection: 0,
+        origin: { x: 0, y: 0 },
         size: 1,
         entered: transition === "none",
         entry: 0,
         transition,
-        delay: tile.y * 0.012 + tile.x * 0.006 + tile.z * 0.018,
+        delay:
+          transition === "deal"
+            ? (tile.id % 3) * 0.008 + tile.z * 0.022
+            : tile.y * 0.012 + tile.x * 0.006 + tile.z * 0.018,
         matchTime: 0,
         matchX: 0,
         matchY: 0,
@@ -191,6 +243,7 @@ export class BoardRenderer {
     const width = Math.max(1, this.host.clientWidth),
       height = Math.max(1, this.host.clientHeight);
     this.app.renderer.resize(width, height);
+    this.onResize?.();
     if (!this.tiles.length) return;
     const xs = this.tiles.map((t) => t.x * 92 + t.z * 5),
       ys = this.tiles.map((t) => t.y * 125 - t.z * 13);
@@ -211,7 +264,27 @@ export class BoardRenderer {
     for (const v of this.views.values()) {
       v.baseX = v.tile.x * 92 + v.tile.z * 5;
       v.baseY = v.tile.y * 125 - v.tile.z * 13;
-      v.container.position.set(v.baseX, v.baseY + v.dy);
+      const direction = v.tile.id % 5,
+        across = width / this.scale + 110,
+        down = height / this.scale + 150;
+      v.origin.x =
+        direction === 0 || direction === 3
+          ? -across
+          : direction === 1 || direction === 4
+            ? across
+            : 0;
+      v.origin.y = direction === 2 ? down : direction >= 3 ? -down : 0;
+      const pose = !v.entered
+        ? entrancePose(
+            v.entry,
+            v.delay,
+            v.transition,
+            this.settings.reducedMotion,
+            v.origin,
+          )
+        : { x: 0, y: 0, alpha: 1 };
+      v.container.position.set(v.baseX + pose.x, v.baseY + pose.y);
+      if (!v.entered) v.container.alpha = pose.alpha;
     }
   }
   refresh() {
@@ -224,26 +297,27 @@ export class BoardRenderer {
     }
     for (const v of this.views.values()) {
       const free = isFree(v.tile, this.tiles),
-        active = v.tile.id === this.selected,
+        active = v.tile.id === this.selected || v.tile.id === this.pressed,
         hint = this.hinted.includes(v.tile.id);
       v.container.visible = !v.tile.removed || v.fade > 0;
       v.container.eventMode = v.tile.removed ? "none" : "static";
-      v.sprite.tint = free
-        ? 0xffffff
-        : this.settings.highContrast
-          ? 0x839f8f
-          : 0xd4ded1;
+      v.free = free;
+      v.active = active;
+      if (active && v.selection === 0) v.selection = 0.22;
+      v.sprite.tint = active
+        ? 0xe6f3ba
+        : free
+          ? 0xffffff
+          : this.settings.highContrast
+            ? 0x839f8f
+            : 0xd4ded1;
       v.glow.visible = active || hint || v.fade > 0;
-      v.container.zIndex =
-        v.fade > 0
-          ? 2000
-          : active
-            ? 1000
-            : v.tile.z * 100 + v.tile.y * 7 + v.tile.x;
-      v.targetY = active && !this.settings.reducedMotion ? -9 : 0;
-      if (!v.fade) {
-        v.container.alpha = 1;
-      }
+      v.glow.tint = active ? 0xd7ef83 : 0xffffff;
+      v.halo.alpha = active ? 0.22 : 0;
+      // Preserve real Mahjong layer order during entry and selection.
+      v.container.zIndex = v.tile.z * 100 + v.tile.y * 7 + v.tile.x;
+      v.targetY = 0;
+      if (!v.fade && v.entered) v.container.alpha = 1;
       v.shadow.alpha = active ? 1 : 0.8;
     }
   }
@@ -262,18 +336,26 @@ export class BoardRenderer {
       if (v) v.shake = this.settings.reducedMotion ? 0 : 0.2;
     }
   }
-  remove(ids) {
-    const views = ids.map((id) => this.views.get(id)).filter(Boolean);
-    const centerX = views.reduce((n, v) => n + v.baseX, 0) / views.length;
-    const centerY = views.reduce((n, v) => n + v.baseY, 0) / views.length;
-    for (const v of views) {
-      v.fade = this.settings.reducedMotion ? 0.08 : MATCH_DURATION;
+  remove(ids, reward = 0) {
+    this.pressed = null;
+    let rewarded = false;
+    for (const id of ids) {
+      const v = this.views.get(id);
+      if (!v) continue;
+      v.fade = MATCH_DURATION;
       v.matchTime = 0;
-      v.impacted = false;
       v.entered = true;
-      v.matchX = Math.max(-28, Math.min(28, centerX - v.baseX));
-      v.matchY = Math.max(-12, Math.min(12, centerY - v.baseY));
-      v.glow.visible = true;
+      v.selection = 0;
+      v.halo.alpha = 0;
+      v.container.position.set(v.baseX, v.baseY);
+      v.container.scale.set(1);
+      const x = this.board.x + (v.baseX + 48) * this.scale,
+        y = this.board.y + (v.baseY + 60) * this.scale;
+      this.matchEffects.spawn(x, y, 90 * this.scale, this.quality);
+      if (reward && !rewarded) {
+        this.matchEffects.reward(x, Math.max(16, y - 14), reward);
+        rewarded = true;
+      }
     }
     this.selected = null;
     this.hinted = [];
@@ -318,6 +400,7 @@ export class BoardRenderer {
     this.showCombo(0);
   }
   showCombo(combo) {
+    if (combo > 0) return; // Match combos belong to the top HUD; keep completion feedback unchanged.
     this.comboLife = 0.85;
     this.comboLabel.text = combo
       ? `${combo}×  Beautiful flow`
@@ -333,6 +416,9 @@ export class BoardRenderer {
   }
   tick(ms) {
     const dt = Math.min(ms, 50) / 1000;
+    const animationDt = Math.min(ms, 1000) / 1000;
+    this.onFrame?.(animationDt);
+    this.matchEffects.tick(animationDt);
     if (this.comboLife > 0) {
       this.comboLife = Math.max(0, this.comboLife - dt);
       this.comboLabel.alpha = this.comboGlow.alpha = Math.min(
@@ -348,9 +434,11 @@ export class BoardRenderer {
     for (const v of this.views.values()) {
       if (v.tile.removed && !v.fade) continue;
       const reduced = this.settings.reducedMotion,
-        active = v.tile.id === this.selected;
+        active = v.active;
       v.dy = reduced ? 0 : v.dy + (v.targetY - v.dy) * Math.min(1, dt * 24);
-      const targetSize = active && !reduced ? 1.045 : 1;
+      const targetSize = active && !reduced ? 1.015 : 1;
+      v.selection += ((active ? 1 : 0) - v.selection) * Math.min(1, dt * 35);
+      v.halo.alpha = 0.38 * v.selection;
       v.size = reduced
         ? 1
         : v.size + (targetSize - v.size) * Math.min(1, dt * 22);
@@ -364,8 +452,14 @@ export class BoardRenderer {
         dx = reduced ? 0 : Math.sin(v.shake * 90) * 3;
       }
       if (!v.entered) {
-        v.entry += dt;
-        const pose = entrancePose(v.entry, v.delay, v.transition, reduced);
+        v.entry += animationDt;
+        const pose = entrancePose(
+          v.entry,
+          v.delay,
+          v.transition,
+          reduced,
+          v.origin,
+        );
         dx += pose.x;
         dy += pose.y;
         size *= pose.scale;
@@ -376,26 +470,20 @@ export class BoardRenderer {
         ? 1
         : this.hinted.includes(v.tile.id)
           ? 0.62 + 0.38 * Math.sin(this.clock * 5) ** 2
-          : 1;
+          : active
+            ? 0.75
+            : 1;
       if (v.fade > 0) {
-        v.matchTime += dt;
+        v.matchTime += animationDt;
         const pose = matchPose(v.matchTime, reduced);
-        dx = pose.pull * v.matchX;
-        dy = pose.lift + pose.pull * v.matchY;
+        dx = 0;
+        dy = 0;
         size = pose.scale;
         alpha = pose.alpha;
         v.sheen.alpha = pose.flash;
         v.fade = pose.done
           ? 0
           : Math.max(0.001, (reduced ? 0.08 : MATCH_DURATION) - v.matchTime);
-        if (pose.impact && !v.impacted) {
-          v.impacted = true;
-          const point = this.board.toGlobal({
-            x: v.baseX + 48 + dx,
-            y: v.baseY + 60 + dy,
-          });
-          this.burst(point.x, point.y, 20);
-        }
         if (pose.done) v.container.visible = false;
       }
       // Center scaling keeps the symbol still and expands the shadow under the lifted tile.
@@ -406,8 +494,8 @@ export class BoardRenderer {
       v.container.scale.set(size);
       v.container.alpha = alpha;
       v.shadow.y = -dy * 0.6;
-      v.shadow.alpha = active ? 0.65 : 0.8;
-      v.shadow.scale.set(active && !reduced ? 1.04 : 1);
+      v.shadow.alpha = active ? 1 : 0.8;
+      v.shadow.scale.set(1);
     }
     for (const p of this.particles) {
       if (p.life <= 0) continue;
@@ -431,12 +519,15 @@ export class BoardRenderer {
     }
   }
   stop() {
+    this.cancelPress();
     this.app.stop();
   }
   start() {
     this.app.start();
   }
   destroy() {
+    this.app.canvas.removeEventListener("pointercancel", this.cancelPress);
+    this.app.canvas.removeEventListener("touchcancel", this.cancelPress);
     this.resizeObserver.disconnect();
     this.app.destroy(true, {
       children: true,

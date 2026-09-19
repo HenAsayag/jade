@@ -43,6 +43,14 @@ Desktop browser emulation does not establish actual iPhone/Android GPU performan
 
 Tile references are packed into a shared texture atlas at startup with rounded alpha bounds. Original illustrated symbols, porcelain faces, jade edges and gold accents are retained. The renderer is vendored under its MIT license in `vendor/PIXI-LICENSE.txt`. No assets or instructions from the Cosmic Coop ZIP are used.
 
-## Animation pass
+## Animation correction pass
 
-Tiles use a short staggered entrance, eased selection lift with a grounded shadow, pulsing hints, and a 340 ms match sequence (lift, inward draw, porcelain highlight, sparkles, dissolve). Shuffle uses a brief settling motion. Removed tiles immediately stop receiving input, so visual feedback does not block the next match. Reduced-motion mode removes translation, scaling, pulses, flashes, and particles; matches use a quick opacity transition.
+The authoritative correction specification is in `docs/animation-correction-spec.txt`. Selection begins on pointer-down with a soft lime face tint and yellow-green edge/halo, with no lift. Native cancellation and pause clear touch previews.
+
+Matched tiles remain at their original coordinates and disappear within 90 ms. Both locations independently emit pooled blossoms, petals, sparkles, a short flash, and a soft glow lasting up to 420 ms. Removed hitboxes are disabled immediately; consecutive pairs can overlap their effects. Low quality halves petals and removes the secondary glow without changing match timing. Reduced motion removes decorative motion and flashes.
+
+The score counts toward its newest target over 300 ms, retargeting from its current displayed value. Local point rewards float for 400 ms. The top HUD combo crossfades and punches its number over 180 ms. The displayed chain count can exceed the existing 5× scoring multiplier; score rules are unchanged.
+
+New boards assemble from five outer-screen directions over approximately 360–420 ms, with lower layers settling first and upper layers always rendered above them. Hint, shuffle, undo, blocked-tile, mismatch, and completion behavior are preserved.
+
+The browser suite also checks native pointer cancellation, two independent match-effect origins, rapid three-pair chaining, overlapping particles, score continuity, bounded pools, reduced-motion behavior, and slow-frame removal timing.

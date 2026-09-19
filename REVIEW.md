@@ -16,3 +16,7 @@ Reviewed the initial implementation against the first ZIP's implementation promp
 ## Animation update
 
 Reviewed the animation changes for input responsiveness, lifetime/cleanup, and reduced motion. Fixed the review finding that pressed tool icons still transformed under the in-app Reduced Motion toggle. Added motion-curve checks and browser assertions that departing tiles immediately release input and their visuals finish disappearing. Added vertical clearance for lifted tiles.
+
+## Fast floral correction pass
+
+Reviewed against the supplied animation correction specification. Fixed native touch-cancellation/pause preview cleanup, duration-based animation time under slow frames, and landscape combo placement. Core rules, generation, scoring multiplier, progression, and unobserved animations were preserved. Browser acceptance verifies three rapid matches with overlapping local floral effects, immediate hitbox release, continued score counting and HUD combo updates. Manual pointer testing also completed three consecutive pairs without waiting for their effects.

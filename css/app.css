@@ -881,3 +881,70 @@ dialog[open] {
 .reduced-motion .tools button:active:not(:disabled) .tool-icon {
   transform: none;
 }
+.board-mark {
+  position: relative;
+  width: 74px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+.combo-caption,
+.combo-value,
+.combo-old {
+  display: none;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  color: #ffe3a0;
+  text-shadow: 0 1px 2px #5f321a;
+  line-height: 1;
+}
+.has-combo .combo-idle {
+  display: none;
+}
+.has-combo .combo-caption,
+.has-combo .combo-value,
+.has-combo .combo-old {
+  display: block;
+}
+.combo-caption {
+  top: 0;
+  font:
+    10px "DM Sans",
+    Arial,
+    sans-serif;
+  letter-spacing: 0.5px;
+}
+.combo-value,
+.combo-old {
+  top: 14px;
+  font:
+    bold 26px Georgia,
+    serif;
+  transform-origin: center center;
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .game-top .board-mark.has-combo {
+    display: grid;
+    height: 42px;
+  }
+}
+.combo-value,
+.combo-old {
+  background: linear-gradient(#fff3ce, #ffd578 65%, #edb058);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.board-mark {
+  pointer-events: none;
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .game-top .board-mark.has-combo {
+    position: absolute;
+    left: var(--combo-x);
+    top: 8px;
+    transform: translateX(-50%);
+  }
+}

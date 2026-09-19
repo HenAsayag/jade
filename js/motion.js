@@ -1,43 +1,67 @@
-export const MATCH_DURATION = 0.34;
+export const MATCH_DURATION = 0.09;
 export const clamp = (n) => Math.max(0, Math.min(1, n));
 export const easeOut = (n) => 1 - (1 - clamp(n)) ** 3;
 export function matchPose(elapsed, reduced = false) {
-  const p = clamp(elapsed / (reduced ? 0.08 : MATCH_DURATION));
-  if (reduced)
-    return {
-      pull: 0,
-      lift: 0,
-      scale: 1,
-      alpha: 1 - p,
-      flash: 0,
-      impact: false,
-      done: p === 1,
-    };
-  const lift = easeOut(p / 0.35);
-  const finish = easeOut((p - 0.48) / 0.52);
+  const p = clamp(elapsed / MATCH_DURATION);
   return {
-    pull: easeOut(p / 0.65),
-    lift: -15 * lift,
-    scale: 1 + 0.1 * lift - 0.22 * finish,
-    alpha: 1 - finish,
-    flash: 0.34 * Math.sin(Math.PI * clamp(p / 0.7)),
-    impact: p >= 0.48,
+    pull: 0,
+    lift: 0,
+    scale: 1,
+    alpha: 1 - easeOut((elapsed - 0.035) / 0.055),
+    flash: reduced
+      ? 0
+      : 0.48 * Math.sin(Math.PI * clamp((elapsed - 0.02) / 0.06)),
+    impact: elapsed >= 0.03,
     done: p === 1,
   };
 }
-export function entrancePose(elapsed, delay, mode, reduced = false) {
+export function entrancePose(
+  elapsed,
+  delay,
+  mode,
+  reduced = false,
+  origin = { x: 0, y: 0 },
+) {
   if (reduced) return { x: 0, y: 0, scale: 1, alpha: 1, done: true };
-  const p = clamp((elapsed - delay) / 0.25),
+  const duration = mode === "deal" ? 0.36 : 0.25;
+  const p = clamp((elapsed - delay) / duration),
     e = easeOut(p);
   if (p === 1) return { x: 0, y: 0, scale: 1, alpha: 1, done: true };
+  if (mode === "deal")
+    return {
+      x: origin.x * (1 - e),
+      y: origin.y * (1 - e),
+      scale: 0.97 + 0.03 * e,
+      alpha: elapsed < delay ? 0 : 1,
+      done: false,
+    };
+  // Shuffle is deliberately unchanged by the match correction pass.
   return {
-    x:
-      mode === "shuffle"
-        ? Math.sin(p * Math.PI) * (delay % 0.04 > 0.02 ? 16 : -16)
-        : 0,
-    y: mode === "shuffle" ? Math.sin(p * Math.PI) * -12 : (1 - e) * 16,
+    x: Math.sin(p * Math.PI) * (delay % 0.04 > 0.02 ? 16 : -16),
+    y: Math.sin(p * Math.PI) * -12,
     scale: 0.96 + 0.04 * e,
     alpha: 0.25 + 0.75 * e,
-    done: p === 1,
+    done: false,
   };
+}
+export class ScoreTween {
+  constructor() {
+    this.value = 0;
+    this.from = 0;
+    this.target = 0;
+    this.elapsed = 0.3;
+  }
+  set(target, snap = false) {
+    if (target === this.target && !snap) return;
+    this.from = this.value;
+    this.target = target;
+    this.elapsed = snap ? 0.3 : 0;
+    if (snap) this.value = target;
+  }
+  tick(dt) {
+    this.elapsed = Math.min(0.3, this.elapsed + dt);
+    this.value =
+      this.from + (this.target - this.from) * easeOut(this.elapsed / 0.3);
+    return Math.round(this.value);
+  }
 }

@@ -1,3 +1,4 @@
+import { checkAnimationCorrection } from "./animation-checks.js";
 import { validateSolution, isFree } from "../js/board.js";
 const out = document.querySelector("#results"),
   frame = document.querySelector("iframe");
@@ -214,6 +215,7 @@ try {
   }
   frame.style.width = "390px";
   frame.style.height = "844px";
+  await checkAnimationCorrection(api, frame, assert);
   api.newGame(0);
   out.textContent = lines.join("\n") + "\nALL CHECKS PASSED";
 } catch (e) {
