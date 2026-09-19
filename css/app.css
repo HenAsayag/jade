@@ -1,0 +1,843 @@
+:root {
+  color-scheme: dark;
+  --jade: #0c2925;
+  --gold: #d5b77b;
+  --ivory: #f0ecdb;
+  --muted: #8fa79c;
+  --line: #b9c5a51c;
+  font-family: "DM Sans", sans-serif;
+  background: var(--jade);
+  color: var(--ivory);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 65% 30%, #25473b66, transparent 60%), #0c2925;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: 0;
+}
+button:focus-visible,
+a:focus-visible,
+#board:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+button:hover:not(:disabled) {
+  filter: brightness(1.2);
+}
+.ambient {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.055;
+  background-image: url("../assets/reference/jade_match_asset_board.png");
+  background-size: cover;
+  filter: blur(20px);
+}
+#app {
+  position: relative;
+  max-width: 1560px;
+  margin: auto;
+  height: 100dvh;
+  padding: 0 max(36px, env(safe-area-inset-right)) 0
+    max(36px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+}
+.masthead {
+  height: 104px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font:
+    36px "Cormorant Garamond",
+    Georgia,
+    serif;
+  color: var(--gold);
+  text-decoration: none;
+  letter-spacing: -1px;
+}
+.brand svg {
+  width: 43px;
+  height: 43px;
+}
+.brand-light {
+  font-weight: 400;
+  color: var(--ivory);
+}
+.tagline {
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: #a3b5a5;
+  margin-right: 100px;
+}
+.icon-button {
+  background: transparent;
+  border: 1px solid #b5c5a426;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #c2c7af;
+  font-size: 21px;
+  flex-shrink: 0;
+}
+.icon-button svg {
+  width: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+}
+.play-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(380px, 560px) 100px;
+  gap: 5%;
+  flex: 1;
+  min-height: 0;
+  padding: 22px 0 8px;
+}
+.sidebar {
+  padding: 35px 0 10px;
+  display: flex;
+  flex-direction: column;
+  max-width: 340px;
+}
+.eyebrow {
+  font-size: 9px;
+  letter-spacing: 2.4px;
+  color: var(--gold);
+  font-weight: 600;
+}
+h1 {
+  font:
+    500 clamp(40px, 4vw, 63px)/1.08 "Cormorant Garamond",
+    Georgia,
+    serif;
+  margin: 23px 0 18px;
+  letter-spacing: -1px;
+}
+h1 em {
+  color: #c6d1a8;
+  font-weight: 400;
+}
+p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.sidebar > p {
+  margin: 0 0 34px;
+}
+nav {
+  display: grid;
+  gap: 10px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  padding: 17px 15px;
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  gap: 13px;
+  font-size: 12px;
+}
+.nav-item.active {
+  background: #bdc7930b;
+  border-color: #c9bc8138;
+}
+.nav-item small {
+  display: block;
+  font-size: 9px;
+  margin-top: 7px;
+  color: var(--muted);
+}
+.nav-symbol {
+  font-size: 25px;
+  color: var(--gold);
+}
+.nav-arrow {
+  margin-left: auto;
+  color: var(--muted);
+}
+.journey-progress {
+  margin-top: 30px;
+}
+.journey-progress > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #a7b8a8;
+}
+.progress-track {
+  height: 3px;
+  background: #a7b8991c;
+  margin-top: 14px;
+  border-radius: 3px;
+}
+.progress-track i {
+  height: 3px;
+  width: 8.3%;
+  display: block;
+  background: var(--gold);
+}
+.journey-progress p {
+  font-size: 10px;
+}
+.text-button {
+  background: none;
+  color: #bbc5ae;
+  padding: 18px 0;
+  text-align: left;
+  font-size: 11px;
+}
+.text-button span {
+  margin-left: 18px;
+}
+.sidebar-bottom {
+  margin-top: auto;
+  font-size: 9px;
+  color: #708e7e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 20px;
+}
+.tiny-leaf {
+  font-size: 21px;
+  color: var(--gold);
+}
+.game-column {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.level-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+.level-heading .icon-button {
+  width: 35px;
+  height: 35px;
+  border: 0;
+  font-size: 22px;
+}
+.level-heading h2 {
+  font:
+    500 29px "Cormorant Garamond",
+    Georgia,
+    serif;
+  margin: 6px 0 0;
+}
+.level-heading .eyebrow {
+  font-size: 8px;
+  letter-spacing: 2px;
+}
+.game-frame {
+  position: relative;
+  min-height: 240px;
+  flex: 1;
+  border: 1px solid #c9b57b55;
+  border-radius: 16px;
+  background:
+    linear-gradient(#153a33c9, #123930e0),
+    url("../assets/backgrounds/jade_mountain_board.png") center/cover;
+  box-shadow:
+    0 20px 55px #00161155,
+    inset 0 0 0 5px #0a292040;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.game-frame:before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid #d5b77b18;
+  border-radius: 10px;
+  pointer-events: none;
+}
+.game-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 23px 28px 8px;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.stat-label {
+  display: block;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #acbca3;
+}
+.game-top strong {
+  display: block;
+  font:
+    25px "Cormorant Garamond",
+    Georgia,
+    serif;
+  color: #e9ddba;
+  margin-top: 4px;
+}
+.right-stat {
+  text-align: right;
+}
+.board-mark {
+  color: #c5b27369;
+  font-size: 30px;
+}
+#board {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  touch-action: none;
+  user-select: none;
+  outline: 0;
+}
+#board canvas {
+  display: block;
+  touch-action: none;
+}
+.board-footer {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 23px 15px;
+  color: #abc0a1;
+  font-size: 9px;
+  flex-shrink: 0;
+}
+.status-dot {
+  background: #a5c394;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+#timer {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  color: #92a992;
+  font-size: 9px;
+}
+#message {
+  max-width: 85%;
+}
+.tools {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 16px 12px 8px;
+}
+.tools button {
+  position: relative;
+  min-width: 60px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 5px;
+  background: transparent;
+  color: #c4c9ae;
+  font-size: 10px;
+}
+.tool-icon {
+  font-family: Georgia, serif;
+  font-size: 27px;
+  line-height: 42px;
+  width: 46px;
+  height: 46px;
+  border: 1px solid #b7c09844;
+  border-radius: 50%;
+  background: linear-gradient(130deg, #6a82602b, #0d292233);
+  color: #d8bf86;
+  box-shadow: inset 0 0 0 3px #0b2a2588;
+}
+kbd {
+  position: absolute;
+  right: -5px;
+  top: 0;
+  font:
+    8px "DM Sans",
+    sans-serif;
+  color: #6c8777;
+}
+.play-note {
+  text-align: center;
+  font-size: 9px;
+  margin: 5px 0 0;
+  color: #7f9a89;
+}
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+.right-panel span {
+  writing-mode: vertical-rl;
+  font-size: 8px;
+  letter-spacing: 4px;
+  color: #8d9f88;
+}
+.right-panel i {
+  color: var(--gold);
+  font-style: normal;
+}
+.vertical-rule {
+  height: 55px;
+  width: 1px;
+  background: var(--line);
+}
+.site-footer {
+  flex-shrink: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #789082;
+}
+.site-footer > span:last-child {
+  letter-spacing: 0.4px;
+}
+.gold {
+  color: var(--gold);
+  margin-left: 8px;
+}
+#loading {
+  position: absolute;
+  inset: 0;
+  background: #12372e;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+#loading h2 {
+  font:
+    32px "Cormorant Garamond",
+    Georgia,
+    serif;
+}
+.loading-lotus {
+  font-size: 60px;
+  color: var(--gold);
+}
+progress {
+  width: 160px;
+  height: 3px;
+  accent-color: var(--gold);
+}
+dialog {
+  background: #12382f;
+  color: var(--ivory);
+  border: 1px solid #c5ac715e;
+  border-radius: 18px;
+  width: min(460px, calc(100vw - 32px));
+  max-height: 85dvh;
+  box-shadow: 0 30px 100px #0008;
+  padding: 38px;
+  overscroll-behavior: contain;
+}
+dialog::backdrop {
+  background: #031a15b8;
+  backdrop-filter: blur(8px);
+}
+.modal-close {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  border: 0;
+}
+.modal-eyebrow {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--gold);
+}
+dialog h2 {
+  font:
+    38px "Cormorant Garamond",
+    Georgia,
+    serif;
+  margin: 12px 0;
+}
+dialog p {
+  font-size: 12px;
+}
+dialog .primary,
+dialog .secondary {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 6px;
+  margin-top: 12px;
+  background: #d4bc82;
+  color: #163b30;
+  font-size: 12px;
+  font-weight: 600;
+}
+.secondary {
+  background: #ffffff09 !important;
+  color: var(--ivory) !important;
+  border: 1px solid #d0c39430 !important;
+}
+.setting {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+.setting input {
+  accent-color: #c9af6f;
+  width: 23px;
+  height: 23px;
+}
+.journey-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-top: 23px;
+}
+.journey-grid button {
+  height: 72px;
+  background: #c1c7920b;
+  border: 1px solid #c2b77630;
+  border-radius: 7px;
+  font:
+    23px "Cormorant Garamond",
+    Georgia,
+    serif;
+  color: var(--gold);
+}
+.journey-grid small {
+  display: block;
+  font:
+    8px "DM Sans",
+    sans-serif;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.completion-mark {
+  font-size: 64px;
+  color: var(--gold);
+  text-align: center;
+}
+.completion-stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 25px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.completion-stats strong {
+  display: block;
+  color: var(--gold);
+  font:
+    30px "Cormorant Garamond",
+    Georgia,
+    serif;
+}
+.high-contrast {
+  --muted: #d2ddcf;
+  --gold: #ffe0a2;
+}
+.reduced-motion * {
+  animation: none !important;
+  transition: none !important;
+}
+@media (min-width: 1500px) {
+  .play-layout {
+    grid-template-columns: 1fr 580px 140px;
+    gap: 8%;
+  }
+}
+@media (max-width: 1050px) {
+  .right-panel {
+    display: none;
+  }
+  .play-layout {
+    grid-template-columns: minmax(200px, 1fr) minmax(340px, 1.6fr);
+    gap: 35px;
+  }
+  .tagline {
+    margin: 0;
+  }
+  .sidebar {
+    padding-top: 25px;
+  }
+  h1 {
+    font-size: 43px;
+  }
+  .sidebar > p {
+    margin-bottom: 20px;
+  }
+  .nav-item {
+    padding: 12px 8px;
+  }
+  .journey-progress {
+    margin-top: 22px;
+  }
+}
+@media (max-width: 700px) {
+  #app {
+    padding: env(safe-area-inset-top) max(14px, env(safe-area-inset-right))
+      env(safe-area-inset-bottom) max(14px, env(safe-area-inset-left));
+  }
+  .masthead {
+    height: 66px;
+  }
+  .brand {
+    font-size: 29px;
+    gap: 7px;
+  }
+  .brand svg {
+    width: 33px;
+    height: 33px;
+  }
+  .masthead .icon-button {
+    border: 0;
+  }
+  .tagline,
+  .sidebar,
+  .site-footer {
+    display: none;
+  }
+  .play-layout {
+    display: flex;
+    flex-direction: column;
+    padding: 14px 0 8px;
+    gap: 0;
+  }
+  .game-column {
+    flex: 1;
+  }
+  .level-heading {
+    margin-bottom: 12px;
+  }
+  .level-heading h2 {
+    font-size: 27px;
+  }
+  .game-top {
+    padding: 19px 22px 5px;
+  }
+  .tools {
+    gap: 45px;
+    padding: 12px 10px 5px;
+  }
+  .tools button {
+    min-height: 64px;
+  }
+  .play-note {
+    font-size: 8px;
+    margin: 3px 0;
+  }
+  .game-frame {
+    border-radius: 12px;
+  }
+  .board-footer {
+    font-size: 8px;
+    padding: 8px 17px 13px;
+    min-height: 31px;
+  }
+  .game-top strong {
+    font-size: 23px;
+  }
+  kbd {
+    display: none;
+  }
+}
+@media (max-height: 700px) {
+  .masthead {
+    height: 65px;
+  }
+  .play-layout {
+    padding-top: 10px;
+  }
+  .level-heading {
+    margin-bottom: 8px;
+  }
+  .game-top {
+    padding-top: 12px;
+  }
+  .tools {
+    padding-top: 8px;
+    padding-bottom: 2px;
+  }
+  .tool-icon {
+    height: 38px;
+    width: 38px;
+    line-height: 34px;
+  }
+  .site-footer {
+    height: 28px;
+  }
+  .sidebar {
+    padding-top: 10px;
+  }
+  .sidebar > p {
+    margin-bottom: 16px;
+  }
+  .journey-progress {
+    margin-top: 18px;
+  }
+  .sidebar-bottom {
+    display: none;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  #app {
+    padding: 0 16px;
+  }
+  .masthead {
+    height: 44px;
+  }
+  .brand {
+    font-size: 26px;
+  }
+  .brand svg {
+    height: 28px;
+  }
+  .sidebar {
+    display: none;
+  }
+  .play-layout {
+    display: block;
+    padding: 5px 0;
+  }
+  .game-column {
+    height: 100%;
+    padding-right: 110px;
+    position: relative;
+  }
+  .game-frame {
+    min-height: 0;
+  }
+  .level-heading {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 98px;
+    display: block;
+  }
+  .level-heading .eyebrow {
+    display: none;
+  }
+  .level-heading h2 {
+    font-size: 19px;
+  }
+  .level-heading .icon-button {
+    display: inline-grid;
+  }
+  .tools {
+    position: absolute;
+    right: 12px;
+    top: 105px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0;
+  }
+  .tools button {
+    min-height: 45px;
+    flex-direction: row;
+    gap: 8px;
+  }
+  .tool-icon {
+    width: 30px;
+    height: 30px;
+    line-height: 27px;
+    font-size: 21px;
+  }
+  .play-note,
+  .site-footer,
+  .right-panel {
+    display: none;
+  }
+  .game-top {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 85px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px;
+    gap: 12px;
+  }
+  .game-top .board-mark {
+    display: none;
+  }
+  .right-stat {
+    text-align: left;
+  }
+  #board {
+    margin-left: 85px;
+    width: calc(100% - 85px);
+  }
+  .board-footer {
+    position: absolute;
+    bottom: 0;
+    left: 90px;
+    right: 10px;
+    padding: 4px;
+    min-height: 20px;
+  }
+}
+
+body {
+  font-family: "DM Sans", Arial, sans-serif;
+}
+.play-layout {
+  min-height: 0;
+  overflow: hidden;
+}
+.game-frame {
+  background:
+    linear-gradient(#153a33df, #123930ed),
+    url("../assets/backgrounds/jade_mountain_board.png") center/cover;
+}
+.tool-icon svg {
+  width: 23px;
+  height: 23px;
+  vertical-align: middle;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+}

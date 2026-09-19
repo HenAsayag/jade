@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0c2925" />
+    <meta
+      name="description"
+      content="A quiet moment. A perfect pair. Discover Jade Match, a tactile Mahjong Solitaire journey."
+    />
+    <title>Jade Match — A quieter kind of play</title>
+    <link rel="icon" href="assets/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <div class="ambient" aria-hidden="true"></div>
+    <div id="app">
+      <header class="masthead">
+        <a class="brand" href="#" id="brand" aria-label="Jade Match home"
+          ><svg viewBox="0 0 48 48">
+            <path
+              d="M24 34C10 31 10 16 14 9c9 4 12 14 10 25Zm0 0c14-3 14-18 10-25-9 4-12 14-10 25ZM24 35C12 40 4 31 4 25c9-1 17 2 20 10Zm0 0c12 5 20-4 20-10-9-1-17 2-20 10Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.6"
+            /></svg
+          ><span>Jade<span class="brand-light">Match</span></span></a
+        >
+        <div class="tagline">A QUIETER KIND OF PLAY</div>
+        <button id="settings" class="icon-button" aria-label="Settings">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h6l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3Z"
+            />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+        </button>
+      </header>
+      <main class="play-layout">
+        <aside class="sidebar">
+          <div class="eyebrow">YOUR LITTLE ESCAPE</div>
+          <h1>Find your<br />moment of <em>calm.</em></h1>
+          <p>One tile at a time.<br />One beautiful pair after another.</p>
+          <nav>
+            <button class="nav-item active" id="journey">
+              <span class="nav-symbol">◇</span
+              ><span
+                >Your journey<small
+                  >Twelve places to find your flow</small
+                ></span
+              ><span class="nav-arrow">↗</span></button
+            ><button class="nav-item" id="daily">
+              <span class="nav-symbol">▦</span
+              ><span>Daily ritual<small>A fresh puzzle, every day</small></span
+              ><span class="nav-arrow">↗</span>
+            </button>
+          </nav>
+          <div class="journey-progress">
+            <div>
+              <span>THE JADE PATH</span><span id="path-progress">01 / 12</span>
+            </div>
+            <div class="progress-track"><i id="path-fill"></i></div>
+            <p id="path-description">Your journey begins with a single pair.</p>
+          </div>
+          <button class="text-button" id="how">
+            How to find a match <span>↗</span>
+          </button>
+          <div class="sidebar-bottom">
+            <span class="tiny-leaf">♧</span> No rush. Just a little room to
+            breathe.
+          </div>
+        </aside>
+        <section class="game-column" aria-label="Mahjong Solitaire">
+          <div class="level-heading">
+            <button id="home" class="icon-button" aria-label="Open journey">
+              ←
+            </button>
+            <div>
+              <div class="eyebrow" id="level-label">
+                CHAPTER 01 · THE JADE PATH
+              </div>
+              <h2 id="level-name">The Quiet Garden</h2>
+            </div>
+            <button id="pause" class="icon-button" aria-label="Pause game">
+              Ⅱ
+            </button>
+          </div>
+          <div class="game-frame">
+            <div class="game-top">
+              <div>
+                <span class="stat-label">TILES LEFT</span
+                ><strong id="remaining">40</strong>
+              </div>
+              <div class="board-mark">◇</div>
+              <div class="right-stat">
+                <span class="stat-label">SCORE</span
+                ><strong id="score">0</strong>
+              </div>
+            </div>
+            <div
+              id="board"
+              role="application"
+              aria-label="Mahjong board. Use Tab to focus, arrow keys to choose a free tile, and Enter to select."
+              tabindex="0"
+            ></div>
+            <div class="board-footer">
+              <span class="status-dot"></span
+              ><span id="message" role="status" aria-live="polite"
+                >Match two free tiles. Make a little space.</span
+              ><span id="timer">00:00</span>
+            </div>
+            <div id="loading">
+              <div class="loading-lotus">◇</div>
+              <h2>A moment of calm…</h2>
+              <progress id="load-progress" max="100" value="5"></progress>
+              <p>Preparing your garden</p>
+            </div>
+          </div>
+          <div class="tools">
+            <button id="undo" disabled>
+              <span class="tool-icon">↶</span><span>Undo</span
+              ><kbd>Z</kbd></button
+            ><button id="hint">
+              <span class="tool-icon"
+                ><svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M9 18h6m-6 3h6M8 14c-5-5-1-12 4-12s9 7 4 12l-1 3H9Z"
+                  /></svg></span
+              ><span>Hint</span><kbd>H</kbd></button
+            ><button id="shuffle">
+              <span class="tool-icon">⇄</span><span>Shuffle</span><kbd>S</kbd>
+            </button>
+          </div>
+          <p class="play-note">
+            A tile is free when its top and at least one side are open.
+          </p>
+        </section>
+        <aside class="right-panel">
+          <div class="vertical-rule"></div>
+          <span>RELAX</span><i>·</i><span>MATCH</span><i>·</i
+          ><span>DISCOVER</span>
+          <div class="vertical-rule"></div>
+        </aside>
+      </main>
+      <footer class="site-footer">
+        <span>SMALL TILES. BIG MOMENTS.</span
+        ><span>Made for a slower moment <span class="gold">✧</span></span>
+      </footer>
+    </div>
+    <dialog id="modal">
+      <button
+        id="close-modal"
+        class="icon-button modal-close"
+        aria-label="Close dialog"
+      >
+        ×
+      </button>
+      <div id="modal-content"></div>
+    </dialog>
+    <script>
+      document.querySelector("#loading p").textContent =
+        "Loading the game engine";
+      window.addEventListener("error", (e) => {
+        document.querySelector("#loading p").textContent = e.message;
+      });
+      window.addEventListener("unhandledrejection", (e) => {
+        document.querySelector("#loading p").textContent = String(e.reason);
+      });
+    </script>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

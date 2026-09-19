@@ -1,0 +1,467 @@
+{
+  "source": "jade_match_asset_board.png",
+  "assets": {
+    "orb_01": {
+      "path": "assets/tiles/orb/orb_01.png",
+      "size": [
+        68,
+        100
+      ]
+    },
+    "orb_02": {
+      "path": "assets/tiles/orb/orb_02.png",
+      "size": [
+        68,
+        100
+      ]
+    },
+    "orb_03": {
+      "path": "assets/tiles/orb/orb_03.png",
+      "size": [
+        68,
+        100
+      ]
+    },
+    "orb_04": {
+      "path": "assets/tiles/orb/orb_04.png",
+      "size": [
+        68,
+        100
+      ]
+    },
+    "orb_05": {
+      "path": "assets/tiles/orb/orb_05.png",
+      "size": [
+        68,
+        100
+      ]
+    },
+    "orb_06": {
+      "path": "assets/tiles/orb/orb_06.png",
+      "size": [
+        68,
+        100
+      ]
+    },
+    "orb_07": {
+      "path": "assets/tiles/orb/orb_07.png",
+      "size": [
+        68,
+        100
+      ]
+    },
+    "orb_08": {
+      "path": "assets/tiles/orb/orb_08.png",
+      "size": [
+        68,
+        100
+      ]
+    },
+    "orb_09": {
+      "path": "assets/tiles/orb/orb_09.png",
+      "size": [
+        68,
+        100
+      ]
+    },
+    "flower_lotus": {
+      "path": "assets/tiles/flower/flower_lotus.png",
+      "size": [
+        96,
+        108
+      ]
+    },
+    "flower_camellia": {
+      "path": "assets/tiles/flower/flower_camellia.png",
+      "size": [
+        96,
+        108
+      ]
+    },
+    "flower_plum_blossom": {
+      "path": "assets/tiles/flower/flower_plum_blossom.png",
+      "size": [
+        96,
+        108
+      ]
+    },
+    "flower_iris": {
+      "path": "assets/tiles/flower/flower_iris.png",
+      "size": [
+        96,
+        108
+      ]
+    },
+    "season_spring": {
+      "path": "assets/tiles/season/season_spring.png",
+      "size": [
+        72,
+        111
+      ]
+    },
+    "season_summer": {
+      "path": "assets/tiles/season/season_summer.png",
+      "size": [
+        72,
+        111
+      ]
+    },
+    "season_autumn": {
+      "path": "assets/tiles/season/season_autumn.png",
+      "size": [
+        72,
+        111
+      ]
+    },
+    "season_winter": {
+      "path": "assets/tiles/season/season_winter.png",
+      "size": [
+        72,
+        111
+      ]
+    },
+    "reed_01": {
+      "path": "assets/tiles/reed/reed_01.png",
+      "size": [
+        56,
+        107
+      ]
+    },
+    "reed_02": {
+      "path": "assets/tiles/reed/reed_02.png",
+      "size": [
+        56,
+        107
+      ]
+    },
+    "reed_03": {
+      "path": "assets/tiles/reed/reed_03.png",
+      "size": [
+        56,
+        107
+      ]
+    },
+    "reed_04": {
+      "path": "assets/tiles/reed/reed_04.png",
+      "size": [
+        56,
+        107
+      ]
+    },
+    "reed_05": {
+      "path": "assets/tiles/reed/reed_05.png",
+      "size": [
+        56,
+        107
+      ]
+    },
+    "reed_06": {
+      "path": "assets/tiles/reed/reed_06.png",
+      "size": [
+        56,
+        107
+      ]
+    },
+    "reed_07": {
+      "path": "assets/tiles/reed/reed_07.png",
+      "size": [
+        56,
+        107
+      ]
+    },
+    "reed_08": {
+      "path": "assets/tiles/reed/reed_08.png",
+      "size": [
+        56,
+        107
+      ]
+    },
+    "reed_09": {
+      "path": "assets/tiles/reed/reed_09.png",
+      "size": [
+        56,
+        107
+      ]
+    },
+    "glyph_01": {
+      "path": "assets/tiles/glyph/glyph_01.png",
+      "size": [
+        50,
+        107
+      ]
+    },
+    "glyph_02": {
+      "path": "assets/tiles/glyph/glyph_02.png",
+      "size": [
+        50,
+        107
+      ]
+    },
+    "glyph_03": {
+      "path": "assets/tiles/glyph/glyph_03.png",
+      "size": [
+        50,
+        107
+      ]
+    },
+    "glyph_04": {
+      "path": "assets/tiles/glyph/glyph_04.png",
+      "size": [
+        50,
+        107
+      ]
+    },
+    "glyph_05": {
+      "path": "assets/tiles/glyph/glyph_05.png",
+      "size": [
+        50,
+        107
+      ]
+    },
+    "glyph_06": {
+      "path": "assets/tiles/glyph/glyph_06.png",
+      "size": [
+        50,
+        107
+      ]
+    },
+    "glyph_07": {
+      "path": "assets/tiles/glyph/glyph_07.png",
+      "size": [
+        50,
+        107
+      ]
+    },
+    "glyph_08": {
+      "path": "assets/tiles/glyph/glyph_08.png",
+      "size": [
+        50,
+        107
+      ]
+    },
+    "glyph_09": {
+      "path": "assets/tiles/glyph/glyph_09.png",
+      "size": [
+        50,
+        107
+      ]
+    },
+    "compass_north": {
+      "path": "assets/tiles/compass/compass_north.png",
+      "size": [
+        52,
+        99
+      ]
+    },
+    "compass_east": {
+      "path": "assets/tiles/compass/compass_east.png",
+      "size": [
+        52,
+        99
+      ]
+    },
+    "compass_south": {
+      "path": "assets/tiles/compass/compass_south.png",
+      "size": [
+        52,
+        99
+      ]
+    },
+    "compass_west": {
+      "path": "assets/tiles/compass/compass_west.png",
+      "size": [
+        52,
+        99
+      ]
+    },
+    "element_flame": {
+      "path": "assets/tiles/element/element_flame.png",
+      "size": [
+        64,
+        107
+      ]
+    },
+    "element_water": {
+      "path": "assets/tiles/element/element_water.png",
+      "size": [
+        64,
+        107
+      ]
+    },
+    "element_leaf": {
+      "path": "assets/tiles/element/element_leaf.png",
+      "size": [
+        64,
+        107
+      ]
+    },
+    "ui_undo": {
+      "path": "assets/ui/undo.png",
+      "size": [
+        100,
+        100
+      ]
+    },
+    "ui_hint": {
+      "path": "assets/ui/hint.png",
+      "size": [
+        100,
+        100
+      ]
+    },
+    "ui_shuffle": {
+      "path": "assets/ui/shuffle.png",
+      "size": [
+        100,
+        100
+      ]
+    },
+    "ui_settings": {
+      "path": "assets/ui/settings.png",
+      "size": [
+        100,
+        100
+      ]
+    },
+    "ui_home": {
+      "path": "assets/ui/home.png",
+      "size": [
+        100,
+        100
+      ]
+    },
+    "ui_calendar": {
+      "path": "assets/ui/calendar.png",
+      "size": [
+        100,
+        100
+      ]
+    },
+    "ui_journey": {
+      "path": "assets/ui/journey.png",
+      "size": [
+        100,
+        100
+      ]
+    },
+    "ui_sound": {
+      "path": "assets/ui/sound.png",
+      "size": [
+        100,
+        100
+      ]
+    },
+    "ui_haptics": {
+      "path": "assets/ui/haptics.png",
+      "size": [
+        100,
+        100
+      ]
+    },
+    "ui_reduced_motion": {
+      "path": "assets/ui/reduced_motion.png",
+      "size": [
+        100,
+        100
+      ]
+    },
+    "vfx_tile_break_shards": {
+      "path": "assets/vfx/tile_break_shards.png",
+      "size": [
+        66,
+        60
+      ]
+    },
+    "vfx_sparkles": {
+      "path": "assets/vfx/sparkles.png",
+      "size": [
+        92,
+        95
+      ]
+    },
+    "vfx_gold_dust": {
+      "path": "assets/vfx/gold_dust.png",
+      "size": [
+        131,
+        104
+      ]
+    },
+    "vfx_jade_leaves": {
+      "path": "assets/vfx/jade_leaves.png",
+      "size": [
+        111,
+        107
+      ]
+    },
+    "vfx_petals": {
+      "path": "assets/vfx/petals.png",
+      "size": [
+        112,
+        107
+      ]
+    },
+    "vfx_match_glow": {
+      "path": "assets/vfx/match_glow.png",
+      "size": [
+        114,
+        125
+      ]
+    },
+    "vfx_pop_effect": {
+      "path": "assets/vfx/pop_effect.png",
+      "size": [
+        114,
+        128
+      ]
+    },
+    "vfx_combo_burst": {
+      "path": "assets/vfx/combo_burst.png",
+      "size": [
+        183,
+        139
+      ]
+    },
+    "vfx_level_complete": {
+      "path": "assets/vfx/level_complete.png",
+      "size": [
+        151,
+        136
+      ]
+    },
+    "background_jade_mountain_board": {
+      "path": "assets/backgrounds/jade_mountain_board.png",
+      "size": [
+        311,
+        387
+      ]
+    },
+    "tile_lotus_3d": {
+      "path": "assets/reference/tile_lotus_3d.png",
+      "size": [
+        149,
+        181
+      ]
+    },
+    "tile_back_3d": {
+      "path": "assets/reference/tile_back_3d.png",
+      "size": [
+        133,
+        176
+      ]
+    },
+    "tile_moon_3d": {
+      "path": "assets/reference/tile_moon_3d.png",
+      "size": [
+        163,
+        184
+      ]
+    },
+    "tile_leaf_3d": {
+      "path": "assets/reference/tile_leaf_3d.png",
+      "size": [
+        163,
+        180
+      ]
+    }
+  }
+}
