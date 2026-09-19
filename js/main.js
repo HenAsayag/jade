@@ -7,6 +7,7 @@ import {
   LAYOUTS,
 } from "./board.js";
 import { load, save, localDate } from "./storage.js";
+import { OpeningDoors } from "./opening-doors.js";
 import { AudioManager } from "./audio.js";
 import { HudFeedback } from "./hud-feedback.js";
 import { BoardRenderer } from "./renderer.js";
@@ -37,12 +38,20 @@ let game,
   ready = false,
   keyboardIndex = -1;
 let completionTimer;
+const doors = new OpeningDoors(
+  document.querySelector(".game-column"),
+  data.settings,
+);
 const renderer = new BoardRenderer($("board"), data.settings, selectTile);
 const hud = new HudFeedback(
   $("score"),
   document.querySelector(".board-mark"),
   data.settings,
 );
+renderer.onImpact = (reward) => {
+  audio.play("match", Math.max(1, reward / 100));
+  vibrate([18, 25, 10]);
+};
 renderer.onFrame = (dt) => hud.tick(dt);
 renderer.onResize = () => hud.resize($("board"));
 function persist() {
@@ -52,6 +61,7 @@ function persist() {
 function applySettings() {
   document.body.classList.toggle("high-contrast", data.settings.highContrast);
   document.body.classList.toggle("reduced-motion", data.settings.reducedMotion);
+  if (data.settings.reducedMotion) doors.cancel();
   audio.sync();
   if (ready) renderer.refresh();
   save(data);
@@ -114,6 +124,8 @@ function newGame(level = 0, daily = false) {
   lastMatch = 0;
   keyboardIndex = -1;
   renderer.setBoard(game.tiles, { transition: "deal" });
+  doors.play();
+  audio.play("open");
   update();
   message("Match two free tiles. Make a little space.");
   persist();
@@ -126,6 +138,7 @@ function closeModal() {
   combo = 0;
   if (!document.hidden) {
     renderer.start();
+    doors.resume();
     audio.unlock();
   }
 }
@@ -133,6 +146,7 @@ function showModal(html) {
   if (!ready) return;
   paused = true;
   renderer.stop();
+  doors.pause();
   audio.suspend();
   $("modal-content").innerHTML = html;
   if (!$("modal").open) $("modal").showModal();
@@ -174,8 +188,8 @@ function selectTile(id) {
       game.score += 100 * combo;
       renderer.remove([first.id, tile.id], 100 * combo);
 
-      audio.play("match", combo);
-      vibrate(12);
+      if (data.settings.reducedMotion) renderer.onImpact(100 * combo);
+      else audio.play("flight");
       selected = null;
       update();
       persist();
@@ -446,6 +460,7 @@ try {
   ) {
     game = s;
     renderer.setBoard(game.tiles);
+    doors.play();
     update();
     message("Welcome back. Your quiet moment is right where you left it.");
   } else newGame(Math.min(data.unlocked - 1, 11));

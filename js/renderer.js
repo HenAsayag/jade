@@ -248,14 +248,14 @@ export class BoardRenderer {
     if (!this.tiles.length) return;
     const xs = this.tiles.map((t) => t.x * 92 + t.z * 5),
       ys = this.tiles.map((t) => t.y * 125 - t.z * 13);
-    const minX = Math.min(...xs),
-      maxX = Math.max(...xs) + 98,
-      minY = Math.min(...ys),
-      maxY = Math.max(...ys) + 134;
+    const minX = Math.min(...xs) - 20,
+      maxX = Math.max(...xs) + 116,
+      minY = Math.min(...ys) - 19,
+      maxY = Math.max(...ys) + 147;
     this.scale = Math.min(
-      (width - 32) / (maxX - minX),
-      (height - 40) / (maxY - minY),
-      0.85,
+      (width - 8) / (maxX - minX),
+      (height - 16) / (maxY - minY),
+      1.65,
     );
     this.board.scale.set(this.scale);
     this.board.position.set(
@@ -495,6 +495,7 @@ export class BoardRenderer {
         if (pose.impact && !v.impacted) {
           v.impacted = true;
           if (v.impactLeader) {
+            this.onImpact?.(v.matchReward);
             const x = this.board.x + (v.baseX + v.matchX + 48) * this.scale,
               y = this.board.y + (v.baseY + v.matchY + 60) * this.scale;
             this.matchEffects.shatter(x, y, 90 * this.scale, this.quality);

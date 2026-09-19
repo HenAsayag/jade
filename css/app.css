@@ -948,3 +948,215 @@ dialog[open] {
     transform: translateX(-50%);
   }
 }
+/* The playing surface takes priority over navigation and decorative chrome. */
+#app {
+  max-width: 1100px;
+  padding: env(safe-area-inset-top) max(8px, env(safe-area-inset-right))
+    env(safe-area-inset-bottom) max(8px, env(safe-area-inset-left));
+}
+.masthead {
+  height: 48px;
+  border: 0;
+}
+.brand {
+  font-size: 24px;
+  gap: 6px;
+}
+.brand svg {
+  width: 28px;
+  height: 28px;
+}
+.sidebar,
+.right-panel,
+.site-footer,
+.tagline,
+.play-note {
+  display: none;
+}
+.play-layout {
+  display: flex;
+  flex: 1;
+  padding: 0;
+  gap: 0;
+}
+.game-column {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+}
+.level-heading {
+  margin: 0;
+  min-height: 44px;
+}
+.level-heading .icon-button,
+.icon-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.level-heading h2 {
+  font-size: 19px;
+  margin: 0;
+}
+.level-heading .eyebrow {
+  font-size: 8px;
+  letter-spacing: 1px;
+}
+.game-frame {
+  min-height: 0;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: none;
+}
+.game-frame:before {
+  display: none;
+}
+.game-top {
+  padding: 5px 12px 0;
+  min-height: 48px;
+}
+.game-top strong {
+  font-size: 22px;
+  margin-top: 0;
+}
+.board-footer {
+  min-height: 24px;
+  padding: 4px 10px;
+  font-size: 9px;
+}
+.tools {
+  padding: 5px 0;
+  gap: clamp(20px, 10vw, 80px);
+  flex-shrink: 0;
+}
+.tools button {
+  min-height: 48px;
+  min-width: 64px;
+  gap: 1px;
+  font-size: 10px;
+}
+.tool-icon {
+  width: 34px;
+  height: 34px;
+  line-height: 30px;
+}
+kbd {
+  display: none;
+}
+.opening-doors {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.opening-doors[hidden] {
+  display: none;
+}
+.door-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  overflow: hidden;
+  will-change: transform;
+  filter: drop-shadow(0 0 12px #0008);
+}
+.door-panel svg {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+}
+.door-left {
+  left: 0;
+}
+.door-right {
+  right: 0;
+}
+.door-right svg {
+  right: 0;
+}
+@media (max-width: 700px) and (orientation: portrait) {
+  #app {
+    padding-left: max(2px, env(safe-area-inset-left));
+    padding-right: max(2px, env(safe-area-inset-right));
+  }
+  .masthead {
+    height: 40px;
+    padding: 0 8px;
+  }
+  .brand {
+    font-size: 20px;
+  }
+  .brand svg {
+    width: 23px;
+    height: 23px;
+  }
+  .level-heading {
+    min-height: 42px;
+  }
+  .level-heading h2 {
+    font-size: 16px;
+  }
+  .game-frame {
+    border-radius: 0;
+  }
+  .tools {
+    padding-bottom: 4px;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .masthead {
+    display: none;
+  }
+  .level-heading {
+    min-height: 38px;
+  }
+  .game-column {
+    height: 100%;
+    padding-right: 68px;
+  }
+  .game-frame {
+    width: 100%;
+  }
+  .tools {
+    position: absolute;
+    right: 0;
+    top: 44px;
+    bottom: 0;
+    width: 64px;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: center;
+  }
+  .game-top {
+    padding: 5px;
+    width: 72px;
+  }
+  #board {
+    margin-left: 72px;
+    width: calc(100% - 72px);
+  }
+  .board-footer {
+    left: 75px;
+  }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  .masthead {
+    display: flex;
+    height: 36px;
+  }
+  .level-heading {
+    position: static;
+    width: auto;
+    display: flex;
+  }
+  .level-heading h2 {
+    font-size: 15px;
+  }
+  .tools button {
+    flex-direction: column;
+    gap: 1px;
+  }
+}

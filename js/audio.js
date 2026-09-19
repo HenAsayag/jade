@@ -31,8 +31,41 @@ export class AudioManager {
       g.disconnect();
     };
   }
+  sweep(from, to, duration, volume, type = "sine") {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime,
+      o = this.ctx.createOscillator(),
+      g = this.ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(from, t);
+    o.frequency.exponentialRampToValueAtTime(to, t + duration);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(volume, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+    o.connect(g);
+    g.connect(this.ctx.destination);
+    o.start(t);
+    o.stop(t + duration + 0.02);
+    o.onended = () => {
+      o.disconnect();
+      g.disconnect();
+    };
+  }
   play(name, combo = 1) {
     if (!this.settings.sound) return;
+    if (name === "flight") {
+      this.sweep(260, 1100, 0.22, 0.028, "triangle");
+      return;
+    }
+    if (name === "open") {
+      this.sweep(95, 240, 0.7, 0.035, "triangle");
+      return;
+    }
+    if (name === "match") {
+      this.sweep(240, 65, 0.13, 0.12);
+      this.tone(1750, 0.1, 0.045);
+      this.tone(2450, 0.07, 0.025, 0.015);
+    }
     const notes = {
       select: [660],
       invalid: [180, 155],

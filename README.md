@@ -54,3 +54,9 @@ The score counts toward its newest target over 300 ms, retargeting from its curr
 New boards assemble from five outer-screen directions over approximately 360–420 ms, with lower layers settling first and upper layers always rendered above them. Hint, shuffle, undo, blocked-tile, mismatch, and completion behavior are preserved.
 
 The browser suite checks shared collision positions, continued play during flight, one impact per pair, overlapping shard bursts, fixed pool sizes, and reduced-motion fallback.
+
+## Mobile game-feel update
+
+The board now takes priority over decorative navigation: compact headers and tools, edge-to-edge phone layout, and a higher desktop tile scale limit. An original two-panel wooden lattice door opens over each new garden and on session restoration. Reduced motion skips the doors. Pause/resume also pauses/resumes their animation.
+
+Matches have a rising travel sound followed by a ceramic click, low impact and musical reward at the rendered collision. Haptics use a short double pulse on supporting browsers; iOS browser vibration is not guaranteed. Sound starts only after a user gesture, as required by browsers.

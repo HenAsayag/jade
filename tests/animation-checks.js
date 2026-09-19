@@ -2,13 +2,28 @@ export async function checkAnimationCorrection(api, frame, assert) {
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   api.closeModal();
   api.newGame(0);
-  await wait(500);
+  const doors = frame.contentDocument.querySelector(".opening-doors");
+  assert(
+    !doors.hidden && doors.getAnimations({ subtree: true }).length === 2,
+    "New garden opens through two animated doors",
+  );
+  await wait(1150);
+  assert(
+    doors.hidden,
+    "Opening doors leave no overlay after revealing the board",
+  );
   const r = api.renderer,
     effects = r.matchEffects,
     poolSize = effects.layer.children.length;
   const first = api.game.solution[0],
     second = api.game.solution[1],
     third = api.game.solution[2];
+  let impacts = 0;
+  const originalImpact = r.onImpact;
+  r.onImpact = (reward) => {
+    impacts++;
+    originalImpact?.(reward);
+  };
   r.stop();
   r.quality = 2;
   r.slowTime = 0;
@@ -24,6 +39,7 @@ export async function checkAnimationCorrection(api, frame, assert) {
     "Both tiles fly to the same collision point",
   );
   r.tick(120);
+  assert(impacts === 0, "Impact feedback waits for the tiles to meet");
   assert(
     views.every((v) => v.container.visible) &&
       effects.pools.shard.every((p) => !p.active),
@@ -40,6 +56,7 @@ export async function checkAnimationCorrection(api, frame, assert) {
       effects.pools.flash.filter((p) => p.active).length === 1,
     "First collision emits one flash and a pooled ceramic shard burst",
   );
+  assert(impacts === 1, "Sound and haptic feedback fire once at collision");
   const firstShards = effects.pools.shard.filter((p) => p.active);
   r.tick(120);
   assert(
@@ -61,6 +78,8 @@ export async function checkAnimationCorrection(api, frame, assert) {
     effects.pools.shard.filter((p) => p.active && p.age === 0).length === 24,
     "A third rapid collision still gets a complete shard burst",
   );
+  assert(impacts === 3, "Rapid pairs each receive exactly one impact callback");
+  r.onImpact = originalImpact;
   r.tick(1000);
   assert(
     effects.activeCount === 0 && effects.layer.children.length === poolSize,
