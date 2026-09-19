@@ -46,7 +46,11 @@ button:hover:not(:disabled) {
   inset: 0;
   pointer-events: none;
   opacity: 0.055;
-  background-image: url("../assets/reference/jade_match_asset_board.png");
+  background-image: radial-gradient(
+    ellipse at 15% 70%,
+    #789a68 0,
+    transparent 60%
+  );
   background-size: cover;
   filter: blur(20px);
 }

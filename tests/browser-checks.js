@@ -56,7 +56,10 @@ try {
   api.selectTile(api.game.solution[0][0]);
   api.selectTile(api.game.solution[0][1]);
   const saved = api.game.score;
-  await new Promise(resolve => { frame.addEventListener("load", resolve, {once:true}); frame.contentWindow.location.reload(); });
+  await new Promise((resolve) => {
+    frame.addEventListener("load", resolve, { once: true });
+    frame.contentWindow.location.reload();
+  });
   api = await ready();
   api.closeModal();
   assert(
@@ -66,6 +69,7 @@ try {
   );
   const doc = frame.contentDocument;
   doc.querySelector("#settings").click();
+  doc.querySelector('[data-setting="sound"]').checked = true;
   doc.querySelector('[data-setting="sound"]').click();
   doc.querySelector("#settings-done").click();
   assert(
@@ -104,11 +108,24 @@ try {
   }
   api.closeModal();
   api.newGame(0);
+  api.closeModal();
+  api.newGame(0);
+  for (const pair of api.game.solution) {
+    api.selectTile(pair[0]);
+    api.selectTile(pair[1]);
+  }
+  api.newGame(1);
+  await delay(500);
+  assert(
+    !frame.contentDocument.querySelector("#modal").open,
+    "Old completion callback cannot interrupt a new garden",
+  );
   const views = api.renderer.views.size;
   for (let i = 0; i < 25; i++) api.newGame(i % 12);
   assert(
     api.renderer.board.children.length === api.renderer.views.size &&
-      api.renderer.fx.children.length === 180,
+      api.renderer.particles.length === 180 &&
+      api.renderer.fx.children.length === 182,
     "Repeated levels reuse bounded particles and remove old tile views",
   );
   api.newGame(0);
@@ -141,6 +158,33 @@ try {
     frame.style.width = width + "px";
     frame.style.height = height + "px";
     await delay(150);
+    api.closeModal();
+    api.newGame(0);
+    await delay(100);
+    for (const id of api.game.solution[0]) {
+      const point = api.renderer.views
+        .get(id)
+        .container.toGlobal({ x: 48, y: 55 });
+      const canvas = api.renderer.app.canvas,
+        rect = canvas.getBoundingClientRect();
+      for (const type of ["pointerdown", "pointerup"])
+        canvas.dispatchEvent(
+          new frame.contentWindow.PointerEvent(type, {
+            bubbles: true,
+            clientX: rect.left + point.x,
+            clientY: rect.top + point.y,
+            pointerId: 1,
+            pointerType: "touch",
+            isPrimary: true,
+            button: 0,
+            buttons: type === "pointerdown" ? 1 : 0,
+          }),
+        );
+    }
+    assert(
+      api.game.score === 100,
+      `Touch coordinate mapping survives resize to ${width} × ${height} (score ${api.game.score})`,
+    );
     const board = api.renderer.board.getBounds();
     const host = api.renderer.host;
     assert(
@@ -164,4 +208,3 @@ try {
   out.textContent = lines.join("\n") + "\nFAIL " + e.stack;
   console.error(e);
 }
-

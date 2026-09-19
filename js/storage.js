@@ -1,4 +1,6 @@
-const KEY = new URLSearchParams(location.search).has("test") ? "jade-match-test-v1" : "jade-match-v1";
+const KEY = new URLSearchParams(location.search).has("test")
+  ? "jade-match-test-v1"
+  : "jade-match-v1";
 const defaults = () => ({
   version: 1,
   unlocked: 1,
@@ -41,4 +43,3 @@ export function localDate() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
-

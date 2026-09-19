@@ -1,3 +1,4 @@
+import { PATTERNS, UPPER_LAYERS } from "./layouts.js";
 export const LAYOUTS = [
   "Turtle",
   "Pyramid",
@@ -82,37 +83,15 @@ export function pairs(tiles) {
   return result;
 }
 export function layout(index) {
-  const rows = [
-    [2, 4, 6, 6, 4, 2],
-    [2, 4, 6, 6, 4, 2],
-    [4, 4, 6, 6, 4, 4],
-    [4, 4, 6, 6, 4, 4],
-    [2, 4, 6, 6, 4, 2],
-    [4, 6, 4, 6, 4, 6],
-    [6, 4, 6, 6, 4, 6],
-    [4, 6, 6, 4, 6, 4],
-    [6, 4, 6, 4, 4, 4],
-    [4, 6, 2, 2, 6, 4],
-    [2, 4, 6, 6, 4, 2],
-    [2, 4, 6, 6, 6, 6],
-  ][index % 12];
   const tiles = [];
   const add = (x, y, z) =>
     tiles.push({ id: tiles.length, x, y, z, removed: false, symbol: "" });
-  rows.forEach((width, y) => {
-    for (let x = 0; x < width; x++) add((6 - width) / 2 + x, y, 0);
-  });
-  const mid = Math.floor(rows.length / 2);
-  for (let y = mid - 1; y <= mid; y++)
-    for (let x = 2; x <= 3; x++) add(x, y, 1);
-  if (index % 3 === 1) {
-    add(2, mid, 2);
-    add(3, mid, 2);
-  }
-  if (index % 3 === 2) {
-    add(1, mid - 1, 1);
-    add(4, mid - 1, 1);
-  }
+  PATTERNS[index % 12].forEach((row, y) =>
+    [...row].forEach((cell, x) => {
+      if (cell === "#") add(x, y, 0);
+    }),
+  );
+  UPPER_LAYERS[index % 12].forEach(([x, y, z]) => add(x, y, z));
   return tiles;
 }
 // A geometric removal witness is also a complete proof of solvability.

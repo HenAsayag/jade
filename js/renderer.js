@@ -5,6 +5,7 @@ import {
   Texture,
   Rectangle,
   Graphics,
+  Text,
 } from "../vendor/pixi.mjs";
 import { SYMBOLS, isFree } from "./board.js";
 export class BoardRenderer {
@@ -77,6 +78,36 @@ export class BoardRenderer {
     const dot = new Graphics().circle(4, 4, 4).fill(0xffffff);
     this.particleTexture = this.app.renderer.generateTexture(dot);
     dot.destroy();
+    const petal = new Graphics().ellipse(7, 4, 7, 4).fill(0xffffff);
+    const shard = new Graphics().poly([0, 0, 8, 2, 5, 10, 1, 7]).fill(0xffffff);
+    this.petalTexture = this.app.renderer.generateTexture(petal);
+    this.shardTexture = this.app.renderer.generateTexture(shard);
+    petal.destroy();
+    shard.destroy();
+    const glowCanvas = document.createElement("canvas");
+    glowCanvas.width = glowCanvas.height = 128;
+    const glowContext = glowCanvas.getContext("2d");
+    const gradient = glowContext.createRadialGradient(64, 64, 1, 64, 64, 64);
+    gradient.addColorStop(0, "#ffe2a099");
+    gradient.addColorStop(1, "#ffe2a000");
+    glowContext.fillStyle = gradient;
+    glowContext.fillRect(0, 0, 128, 128);
+    this.comboGlow = new Sprite(Texture.from(glowCanvas));
+    this.comboGlow.anchor.set(0.5);
+    this.comboGlow.visible = false;
+    this.comboLabel = new Text({
+      text: "",
+      style: {
+        fontFamily: "Georgia",
+        fontSize: 25,
+        fill: 0xffe3a1,
+        dropShadow: { color: 0x15392e, blur: 4, distance: 2 },
+      },
+    });
+    this.comboLabel.anchor.set(0.5);
+    this.comboLabel.visible = false;
+    this.comboLife = 0;
+    this.fx.addChild(this.comboGlow, this.comboLabel);
     for (let i = 0; i < 180; i++) {
       const sprite = new Sprite(this.particleTexture);
       sprite.visible = false;
@@ -91,6 +122,12 @@ export class BoardRenderer {
     progress(100);
   }
   setBoard(tiles) {
+    this.comboLife = 0;
+    this.comboLabel.visible = this.comboGlow.visible = false;
+    for (const p of this.particles) {
+      p.life = 0;
+      p.sprite.visible = false;
+    }
     for (const v of this.views.values())
       v.container.destroy({ children: true });
     this.views.clear();
@@ -209,7 +246,7 @@ export class BoardRenderer {
     this.hinted = [];
     this.refresh();
   }
-  burst(x, y, count = 50) {
+  burst(x, y, count = 50, petals = false) {
     if (this.settings.reducedMotion) return;
     let left = Math.round((count * (this.quality + 1)) / 3);
     for (const p of this.particles) {
@@ -217,21 +254,63 @@ export class BoardRenderer {
       const a = Math.random() * Math.PI * 2,
         speed = 20 + Math.random() * 95;
       p.sprite.position.set(x, y);
-      p.sprite.tint = Math.random() > 0.25 ? 0xe4c47b : 0xfff6d2;
+      const isPetal = petals && Math.random() > 0.5;
+      p.sprite.texture = isPetal
+        ? this.petalTexture
+        : Math.random() > 0.6
+          ? this.shardTexture
+          : this.particleTexture;
+      p.sprite.tint = isPetal
+        ? 0xe9b8b5
+        : Math.random() > 0.25
+          ? 0xe4c47b
+          : 0xfff6d2;
+      p.sprite.rotation = Math.random() * Math.PI;
       p.sprite.scale.set(0.25 + Math.random() * 0.65);
       p.sprite.visible = true;
       p.sprite.alpha = 1;
       p.vx = Math.cos(a) * speed;
       p.vy = Math.sin(a) * speed - 20;
-      p.total = p.life = 0.4 + Math.random() * 0.5;
+      p.total = p.life = (petals ? 1.3 : 0.4) + Math.random() * 0.5;
       if (--left <= 0) break;
     }
   }
   celebrate() {
-    this.burst(this.host.clientWidth / 2, this.host.clientHeight / 2, 160);
+    this.burst(
+      this.host.clientWidth / 2,
+      this.host.clientHeight / 2,
+      160,
+      true,
+    );
+    this.showCombo(0);
+  }
+  showCombo(combo) {
+    this.comboLife = 0.85;
+    this.comboLabel.text = combo
+      ? `${combo}×  Beautiful flow`
+      : "A garden in harmony";
+    this.comboLabel.position.set(
+      this.host.clientWidth / 2,
+      this.host.clientHeight * 0.43,
+    );
+    this.comboGlow.position.copyFrom(this.comboLabel.position);
+    this.comboLabel.visible = true;
+    this.comboGlow.visible = !this.settings.reducedMotion;
+    if (combo) this.burst(this.comboLabel.x, this.comboLabel.y, 12);
   }
   tick(ms) {
     const dt = Math.min(ms, 50) / 1000;
+    if (this.comboLife > 0) {
+      this.comboLife = Math.max(0, this.comboLife - dt);
+      this.comboLabel.alpha = this.comboGlow.alpha = Math.min(
+        1,
+        this.comboLife * 3,
+      );
+      if (!this.settings.reducedMotion) this.comboLabel.y -= dt * 13;
+      this.comboGlow.scale.set(1.5 + (1 - this.comboLife / 0.85) * 1.3);
+      if (!this.comboLife)
+        this.comboLabel.visible = this.comboGlow.visible = false;
+    }
     for (const v of this.views.values()) {
       v.dy += (v.targetY - v.dy) * Math.min(1, dt * 22);
       let dx = 0;
@@ -254,6 +333,7 @@ export class BoardRenderer {
       p.sprite.x += p.vx * dt;
       p.sprite.y += p.vy * dt;
       p.vy += 60 * dt;
+      p.sprite.rotation += dt;
       p.sprite.alpha = Math.max(0, p.life / p.total);
     }
     if (ms > 25 && ms < 250) this.slowTime += ms;

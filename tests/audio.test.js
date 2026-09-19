@@ -1,0 +1,21 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { AudioManager } from "../js/audio.js";
+test("repeated tile gestures do not restart the ambient music timer", (t) => {
+  globalThis.document = { hidden: false };
+  t.after(() => delete globalThis.document);
+  let started = 0;
+  t.mock.method(globalThis, "setInterval", () => ++started);
+  t.mock.method(globalThis, "clearInterval", () => {});
+  const audio = new AudioManager({ music: true });
+  audio.ctx = { resume() {}, suspend() {} };
+  audio.unlock();
+  const timer = audio.musicTimer;
+  audio.unlock();
+  audio.unlock();
+  assert.equal(audio.musicTimer, timer);
+  assert.equal(started, 1);
+  audio.settings.music = false;
+  audio.sync();
+  assert.equal(audio.musicTimer, null);
+});

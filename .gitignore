@@ -2,3 +2,5 @@ node_modules/
 test-results/
 artifacts/
 .npm-cache/
+dist/
+JadeMatch-WebGL.zip

@@ -164,10 +164,12 @@
       document.querySelector("#loading p").textContent =
         "Loading the game engine";
       window.addEventListener("error", (e) => {
-        document.querySelector("#loading p").textContent = e.message;
+        const message = document.querySelector("#loading p");
+        if (message) message.textContent = e.message;
       });
       window.addEventListener("unhandledrejection", (e) => {
-        document.querySelector("#loading p").textContent = String(e.reason);
+        const message = document.querySelector("#loading p");
+        if (message) message.textContent = String(e.reason);
       });
     </script>
     <script type="module" src="js/main.js"></script>

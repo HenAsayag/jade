@@ -52,6 +52,8 @@ export class AudioManager {
     );
   }
   sync() {
+    if (this.musicTimer && this.ctx && this.settings.music && !document.hidden)
+      return;
     clearInterval(this.musicTimer);
     this.musicTimer = null;
     if (this.ctx && this.settings.music && !document.hidden) {

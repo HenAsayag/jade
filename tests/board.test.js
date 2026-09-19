@@ -55,3 +55,18 @@ test("daily generation is deterministic and shuffle recovers partial boards", ()
   const solution = assignSolvable(a.tiles, "shuffle");
   assert.ok(validateSolution(a.tiles, solution));
 });
+
+test("all twelve layouts have distinct coordinates and upper tiles are supported", () => {
+  const shapes = new Set();
+  for (let i = 0; i < 12; i++) {
+    const { tiles } = createBoard(i, 42);
+    shapes.add(JSON.stringify(tiles.map(({ x, y, z }) => [x, y, z])));
+    for (const tile of tiles.filter((t) => t.z > 0))
+      assert.ok(
+        tiles.some(
+          (t) => t.x === tile.x && t.y === tile.y && t.z === tile.z - 1,
+        ),
+      );
+  }
+  assert.equal(shapes.size, 12);
+});

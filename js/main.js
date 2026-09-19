@@ -35,6 +35,7 @@ let game,
   contextLost = false,
   ready = false,
   keyboardIndex = -1;
+let completionTimer;
 const renderer = new BoardRenderer($("board"), data.settings, selectTile);
 function persist() {
   if (game) data.session = structuredClone(game);
@@ -80,6 +81,7 @@ function update() {
   $("journey").classList.toggle("active", !game.daily);
 }
 function newGame(level = 0, daily = false) {
+  clearTimeout(completionTimer);
   const date = localDate(),
     seed = daily ? `jade-daily-${date}` : `jade-${level}-${Date.now()}`;
   if (daily) level = Number(date.replaceAll("-", "")) % 12;
@@ -108,7 +110,7 @@ function newGame(level = 0, daily = false) {
   persist();
 }
 function closeModal() {
-  if (contextLost) return;
+  if (contextLost || !ready) return;
   $("modal").close();
   paused = false;
   lastMatch = 0;
@@ -119,6 +121,7 @@ function closeModal() {
   }
 }
 function showModal(html) {
+  if (!ready) return;
   paused = true;
   renderer.stop();
   audio.suspend();
@@ -159,6 +162,7 @@ function selectTile(id) {
       first.removed = tile.removed = true;
       game.score += 100 * combo;
       renderer.remove([first.id, tile.id]);
+      if (combo > 1) renderer.showCombo(combo);
       audio.play("match", combo);
       vibrate(12);
       selected = null;
@@ -270,8 +274,9 @@ function complete() {
   renderer.celebrate();
   audio.play("complete");
   vibrate(25);
-  setTimeout(() => {
-    if (contextLost) return;
+  const completedGame = game;
+  completionTimer = setTimeout(() => {
+    if (contextLost || !ready || game !== completedGame) return;
     showModal(
       `<div class="completion-mark">✧</div><div class="modal-eyebrow">A LITTLE MOMENT, WELL SPENT</div><h2>${game.daily ? "Your daily ritual, complete." : "A garden in harmony."}</h2><p>${game.level === 11 && !game.daily ? "You have walked the entire Jade Path. Revisit any garden whenever you need a moment." : "You made room for a little calm. Take it with you."}</p><div class="completion-stats"><div><strong>${game.score.toLocaleString()}</strong>points</div><div><strong>${formatTime(game.elapsed)}</strong>your time</div></div><button class="primary" id="next-level">${game.daily ? "Return to your journey" : game.level === 11 ? "Explore your gardens" : "Continue the journey"}</button><button class="secondary" id="replay">Play this garden again</button>`,
     );
