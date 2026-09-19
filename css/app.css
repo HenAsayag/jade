@@ -1061,12 +1061,47 @@ kbd {
   width: 50%;
   overflow: hidden;
   will-change: transform;
-  filter: drop-shadow(0 0 12px #0008);
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 28px,
+      #ffffff03 29px,
+      #0000000a 31px,
+      transparent 33px
+    ),
+    linear-gradient(90deg, #152e28, #284439 48%, #172f28);
+  border: 1px solid #967442;
+  box-shadow:
+    inset 0 0 0 5px #12271f,
+    inset 0 0 0 6px #997b4655,
+    inset 0 0 35px #0005;
 }
 .door-panel svg {
   position: absolute;
+  top: 50%;
   width: 200%;
-  height: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  display: block;
+}
+.door-panel::before,
+.door-panel::after {
+  content: "";
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  height: 14%;
+  border: 1px solid #b18c4966;
+  box-shadow:
+    inset 0 0 0 4px #152d25,
+    inset 0 0 0 5px #b18c492b;
+}
+.door-panel::before {
+  top: 5%;
+}
+.door-panel::after {
+  bottom: 5%;
 }
 .door-left {
   left: 0;
