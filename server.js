@@ -37,5 +37,5 @@ http
     }
   })
   .listen(4173, "127.0.0.1", () =>
-    console.log("Jade Match: http://localhost:4173"),
+    console.log("Moonleaf: http://localhost:4173"),
   );

@@ -27,7 +27,7 @@ const titles = [
   "A Golden Morning",
   "Wings in the Garden",
   "The Hidden Jewel",
-  "The Jade Temple",
+  "The Moonlit Temple",
 ];
 let game,
   selected = null,
@@ -85,7 +85,7 @@ function update() {
   $("shuffle").disabled = remaining === 0;
   $("level-label").textContent = game.daily
     ? `DAILY RITUAL · ${game.date}`
-    : `CHAPTER ${String(game.level + 1).padStart(2, "0")} · THE JADE PATH`;
+    : `CHAPTER ${String(game.level + 1).padStart(2, "0")} · THE MOONLEAF PATH`;
   $("level-name").textContent = game.daily
     ? "A Moment for Today"
     : titles[game.level];
@@ -303,7 +303,7 @@ function complete() {
   completionTimer = setTimeout(() => {
     if (contextLost || !ready || game !== completedGame) return;
     showModal(
-      `<div class="completion-mark">✧</div><div class="modal-eyebrow">A LITTLE MOMENT, WELL SPENT</div><h2>${game.daily ? "Your daily ritual, complete." : "A garden in harmony."}</h2><p>${game.level === 11 && !game.daily ? "You have walked the entire Jade Path. Revisit any garden whenever you need a moment." : "You made room for a little calm. Take it with you."}</p><div class="completion-stats"><div><strong>${game.score.toLocaleString()}</strong>points</div><div><strong>${formatTime(game.elapsed)}</strong>your time</div></div><button class="primary" id="next-level">${game.daily ? "Return to your journey" : game.level === 11 ? "Explore your gardens" : "Continue the journey"}</button><button class="secondary" id="replay">Play this garden again</button>`,
+      `<div class="completion-mark">✧</div><div class="modal-eyebrow">A LITTLE MOMENT, WELL SPENT</div><h2>${game.daily ? "Your daily ritual, complete." : "A garden in harmony."}</h2><p>${game.level === 11 && !game.daily ? "You have walked the entire Moonleaf Path. Revisit any garden whenever you need a moment." : "You made room for a little calm. Take it with you."}</p><div class="completion-stats"><div><strong>${game.score.toLocaleString()}</strong>points</div><div><strong>${formatTime(game.elapsed)}</strong>your time</div></div><button class="primary" id="next-level">${game.daily ? "Return to your journey" : game.level === 11 ? "Explore your gardens" : "Continue the journey"}</button><button class="secondary" id="replay">Play this garden again</button>`,
     );
     button("next-level", () =>
       game.daily || game.level === 11 ? journey() : chooseGame(game.level + 1),
@@ -313,7 +313,7 @@ function complete() {
 }
 function journey() {
   showModal(
-    `<div class="modal-eyebrow">THE JADE PATH</div><h2>Your journey</h2><p>Twelve gardens. A little more stillness with every step.</p><div class="journey-grid">${LAYOUTS.map((name, i) => `<button data-level="${i}" ${i >= data.unlocked ? "disabled" : ""} aria-label="${name}, ${i >= data.unlocked ? "locked" : data.completed.includes(i) ? "completed" : "available"}">${data.completed.includes(i) ? "✓" : String(i + 1).padStart(2, "0")}<small>${name}</small></button>`).join("")}</div><button class="secondary" id="daily-modal">Today's daily ritual</button>`,
+    `<div class="modal-eyebrow">THE MOONLEAF PATH</div><h2>Your journey</h2><p>Twelve gardens. A little more stillness with every step.</p><div class="journey-grid">${LAYOUTS.map((name, i) => `<button data-level="${i}" ${i >= data.unlocked ? "disabled" : ""} aria-label="${name}, ${i >= data.unlocked ? "locked" : data.completed.includes(i) ? "completed" : "available"}">${data.completed.includes(i) ? "✓" : String(i + 1).padStart(2, "0")}<small>${name}</small></button>`).join("")}</div><button class="secondary" id="daily-modal">Today's daily ritual</button>`,
   );
   for (const b of $("modal-content").querySelectorAll("[data-level]"))
     b.addEventListener("click", () => chooseGame(Number(b.dataset.level)));

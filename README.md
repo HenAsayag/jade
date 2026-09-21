@@ -1,4 +1,4 @@
-# Jade Match
+# Moonleaf
 
 A mobile-first Mahjong Solitaire game built from the **first Jade Match ZIP**. The game uses a single PixiJS 8 WebGL canvas for its layered board, tile atlas, animation, and pooled effects. There is no backend or build dependency at runtime.
 
@@ -60,3 +60,7 @@ The browser suite checks shared collision positions, continued play during fligh
 The board now takes priority over decorative navigation: compact headers and tools, edge-to-edge phone layout, and a higher desktop tile scale limit. An original two-panel wooden lattice door opens over each new garden and on session restoration. Reduced motion skips the doors. Pause/resume also pauses/resumes their animation.
 
 Matches have a rising travel sound followed by a ceramic click, low impact and musical reward at the rendered collision. Haptics use a short double pulse on supporting browsers; iOS browser vibration is not guaranteed. Sound starts only after a user gesture, as required by browsers.
+
+## Moonleaf identity
+
+The game is now named Moonleaf. The original source kit and legacy save keys retain their names to preserve provenance and existing player progress. Promotional artwork is in [marketing/moonleaf-poster.png](marketing/moonleaf-poster.png).
