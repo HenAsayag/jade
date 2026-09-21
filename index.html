@@ -16,16 +16,34 @@
     <link rel="stylesheet" href="css/app.css" />
   </head>
   <body>
+    <section id="welcome" aria-label="Welcome to Moonleaf">
+      <img
+        src="assets/backgrounds/moonleaf-poster.png"
+        alt="Moonleaf — Mahjong Solitaire. Moonlit garden with matching ivory tiles."
+        fetchpriority="high"
+      />
+      <div class="welcome-action">
+        <button id="begin-play" class="primary" disabled>
+          Preparing your garden…
+        </button>
+      </div>
+    </section>
     <div class="ambient" aria-hidden="true"></div>
-    <div id="app">
+    <div id="app" inert>
       <header class="masthead">
         <a class="brand" href="#" id="brand" aria-label="Moonleaf home"
-          ><svg viewBox="0 0 48 48">
+          ><svg viewBox="0 0 48 48" aria-hidden="true">
             <path
-              d="M24 34C10 31 10 16 14 9c9 4 12 14 10 25Zm0 0c14-3 14-18 10-25-9 4-12 14-10 25ZM24 35C12 40 4 31 4 25c9-1 17 2 20 10Zm0 0c12 5 20-4 20-10-9-1-17 2-20 10Z"
+              d="M29 5A19 19 0 1 0 43 32 17 17 0 0 1 29 5Z"
               fill="none"
               stroke="currentColor"
-              stroke-width="1.6"
+              stroke-width="2"
+            />
+            <path
+              d="M25 34c-2-10 2-17 11-21 2 10-2 17-11 21Zm0 0 8-14m-8 14c-8-1-12-6-12-13 8 1 12 6 12 13Z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
             /></svg
           ><span>Moon<span class="brand-light">leaf</span></span></a
         >

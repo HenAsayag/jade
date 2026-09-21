@@ -360,7 +360,7 @@ function how() {
   button("how-done", closeModal);
 }
 function pause() {
-  if (!ready || contextLost) return;
+  if ($("welcome") || !ready || contextLost) return;
   persist();
   showModal(
     '<div class="modal-eyebrow">THERE IS NO HURRY</div><h2>Take a breath.</h2><p>Your garden will be right here.</p><button class="primary" id="resume">Return to the garden</button><button class="secondary" id="restart">Start this garden again</button><button class="secondary" id="pause-journey">Explore your journey</button>',
@@ -465,6 +465,25 @@ try {
     message("Welcome back. Your quiet moment is right where you left it.");
   } else newGame(Math.min(data.unlocked - 1, 11));
   $("loading").remove();
+  if (new URLSearchParams(location.search).has("test")) {
+    $("welcome").remove();
+    $("app").inert = false;
+  } else {
+    paused = true;
+    renderer.stop();
+    doors.cancel();
+    $("begin-play").disabled = false;
+    $("begin-play").textContent = game.history.length
+      ? "Continue your garden"
+      : "Enter the garden";
+    button("begin-play", () => {
+      $("welcome").remove();
+      $("app").inert = false;
+      closeModal();
+      doors.play();
+      audio.play("open");
+    });
+  }
   renderer.app.canvas.addEventListener("webglcontextlost", (e) => {
     e.preventDefault();
     contextLost = true;
@@ -496,6 +515,8 @@ try {
       closeModal,
     };
 } catch (error) {
+  $("welcome")?.remove();
+  $("app").inert = false;
   console.error(error);
   $("loading").innerHTML =
     '<h2>Your garden needs WebGL.</h2><p>Please enable hardware acceleration or try a supported browser.</p><button id="retry">Try again</button>';
