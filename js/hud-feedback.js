@@ -30,10 +30,13 @@ export class HudFeedback {
     this.initialized = true;
     this.score.textContent = Math.round(this.counter.value).toLocaleString();
   }
-  reset() {
+  clearCombo() {
     this.chain = 0;
     this.life = 0;
     this.mark.classList.remove("has-combo");
+  }
+  reset() {
+    this.clearCombo();
     this.setScore(0, true);
   }
   combo(continues) {

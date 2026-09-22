@@ -56,7 +56,17 @@ renderer.onFrame = (dt) => hud.tick(dt);
 renderer.onResize = () => hud.resize($("board"));
 function persist() {
   if (game) data.session = structuredClone(game);
-  save(data);
+  const saved = save(data);
+  let notice = $("save-notice");
+  if (!saved && !notice) {
+    notice = document.createElement("p");
+    notice.id = "save-notice";
+    notice.setAttribute("role", "status");
+    notice.textContent =
+      "Saving is unavailable. Keep this tab open to keep your progress.";
+    document.querySelector(".tools").before(notice);
+  }
+  if (notice) notice.hidden = saved;
 }
 function applySettings() {
   document.body.classList.toggle("high-contrast", data.settings.highContrast);
@@ -136,6 +146,8 @@ function closeModal() {
   paused = false;
   lastMatch = 0;
   combo = 0;
+  hud.clearCombo();
+  if (game.tiles.every((t) => t.removed)) scheduleCompletion(0);
   if (!document.hidden) {
     renderer.start();
     doors.resume();
@@ -250,12 +262,19 @@ function hint() {
   persist();
 }
 function undo() {
-  if (paused || !ready || !game.history.length) return;
+  if (
+    paused ||
+    !ready ||
+    !game.history.length ||
+    game.tiles.every((t) => t.removed)
+  )
+    return;
   const move = game.history.pop();
   for (const id of move.ids)
     game.tiles.find((t) => t.id === id).removed = false;
   game.score = move.score;
   combo = 0;
+  hud.clearCombo();
   lastMatch = 0;
   selected = null;
   renderer.setBoard(game.tiles);
@@ -266,7 +285,7 @@ function undo() {
   persist();
 }
 function shuffle() {
-  if (paused || !ready) return;
+  if (paused || !ready || game.tiles.every((t) => t.removed)) return;
   try {
     game.solution = assignSolvable(
       game.tiles,
@@ -279,6 +298,7 @@ function shuffle() {
   game.history = [];
   selected = null;
   combo = 0;
+  hud.clearCombo();
   renderer.setBoard(game.tiles, { transition: "shuffle" });
   update();
   audio.unlock();
@@ -299,9 +319,20 @@ function complete() {
   renderer.celebrate();
   audio.play("complete");
   vibrate(25);
+  scheduleCompletion(450);
+}
+function scheduleCompletion(delay) {
+  clearTimeout(completionTimer);
   const completedGame = game;
   completionTimer = setTimeout(() => {
-    if (contextLost || !ready || game !== completedGame) return;
+    if (
+      contextLost ||
+      !ready ||
+      paused ||
+      game !== completedGame ||
+      game.tiles.some((t) => !t.removed)
+    )
+      return;
     showModal(
       `<div class="completion-mark">✧</div><div class="modal-eyebrow">A LITTLE MOMENT, WELL SPENT</div><h2>${game.daily ? "Your daily ritual, complete." : "A garden in harmony."}</h2><p>${game.level === 11 && !game.daily ? "You have walked the entire Moonleaf Path. Revisit any garden whenever you need a moment." : "You made room for a little calm. Take it with you."}</p><div class="completion-stats"><div><strong>${game.score.toLocaleString()}</strong>points</div><div><strong>${formatTime(game.elapsed)}</strong>your time</div></div><button class="primary" id="next-level">${game.daily ? "Return to your journey" : game.level === 11 ? "Explore your gardens" : "Continue the journey"}</button><button class="secondary" id="replay">Play this garden again</button>`,
     );
@@ -309,7 +340,7 @@ function complete() {
       game.daily || game.level === 11 ? journey() : chooseGame(game.level + 1),
     );
     button("replay", () => chooseGame(game.level, game.daily));
-  }, 450);
+  }, delay);
 }
 function journey() {
   showModal(
@@ -343,7 +374,7 @@ function settings() {
       )
       .join(
         "",
-      )}<p>Progress is saved automatically on this device.</p><button class="primary" id="settings-done">Back to the garden</button>`,
+      )}<p>Progress is saved automatically on this device.</p><button class="secondary" id="settings-help">How to play</button><button class="primary" id="settings-done">Back to the garden</button>`,
   );
   for (const input of $("modal-content").querySelectorAll("input"))
     input.addEventListener("change", () => {
@@ -352,6 +383,7 @@ function settings() {
       audio.suspend();
     });
   button("settings-done", closeModal);
+  button("settings-help", how);
 }
 function how() {
   showModal(
@@ -388,7 +420,15 @@ $("brand").addEventListener("click", (e) => {
   journey();
 });
 window.addEventListener("keydown", (e) => {
-  if (!ready || $("modal").open || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (
+    !ready ||
+    $("welcome") ||
+    $("modal").open ||
+    e.ctrlKey ||
+    e.metaKey ||
+    e.altKey
+  )
+    return;
   if (e.key.toLowerCase() === "h") hint();
   if (e.key.toLowerCase() === "z") undo();
   if (e.key.toLowerCase() === "s") shuffle();
@@ -465,7 +505,10 @@ try {
     message("Welcome back. Your quiet moment is right where you left it.");
   } else newGame(Math.min(data.unlocked - 1, 11));
   $("loading").remove();
-  if (new URLSearchParams(location.search).has("test")) {
+  if (
+    new URLSearchParams(location.search).has("test") &&
+    !new URLSearchParams(location.search).has("welcome")
+  ) {
     $("welcome").remove();
     $("app").inert = false;
   } else {
@@ -496,7 +539,11 @@ try {
   renderer.app.canvas.addEventListener("webglcontextrestored", () => {
     contextLost = false;
     renderer.setBoard(game.tiles);
-    pause();
+    if ($("welcome")) {
+      $("modal").close();
+      paused = true;
+      renderer.stop();
+    } else pause();
   });
   if (new URLSearchParams(location.search).has("test"))
     window.jadeTest = {

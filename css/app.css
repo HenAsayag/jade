@@ -1250,3 +1250,11 @@ kbd {
     background: none;
   }
 }
+#save-notice {
+  margin: 0;
+  padding: 5px 8px;
+  color: #ffe1a0;
+  font-size: 11px;
+  text-align: center;
+  flex-shrink: 0;
+}
